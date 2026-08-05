@@ -170,14 +170,15 @@
   .prog-legend span{display:flex; align-items:center; gap:5px}
   .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
   /* Toolbar */
-  .toolbar{display:flex; gap:8px; padding:14px 16px 6px; align-items:center}
+  .toolbar{display:flex; flex-wrap:wrap; gap:8px; padding:14px 16px 6px; align-items:center}
+  .toolbar .searchwrap{flex:1 1 100%}
   .toolbar input.search{
-    flex:1; border:1px solid rgba(255,255,255,.8); border-radius:24px; padding:11px 16px 11px 44px; font-size:14px;
+    width:100%; border:1px solid rgba(255,255,255,.8); border-radius:24px; padding:11px 16px 11px 44px; font-size:14px;
     background:rgba(255,255,255,.7); box-shadow:var(--shadow-sm); color:var(--ink);
   }
   .toolbar input.search:focus{outline:none; border-color:var(--rose); box-shadow:0 0 0 3px rgba(47,160,124,.20)}
   .toolbar select{
-    border:1px solid rgba(255,255,255,.8); border-radius:14px; padding:10px 8px; font-size:13px;
+    flex:1 1 0; min-width:0; border:1px solid rgba(255,255,255,.8); border-radius:14px; padding:10px 8px; font-size:13px;
     background:rgba(255,255,255,.7); color:var(--ink); box-shadow:var(--shadow-sm);
   }
   /* Category groups */
