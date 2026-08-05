@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#8b2f5c" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Wedding Budget" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="description" content="Wedding budget & vendor payment tracker — works offline, data stays on your phone." />
+<title>💍 Wedding Budget Tracker</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icons/favicon-64.png" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<style>
+  :root{
+    --bg:#faf6f8; --card:#ffffff; --ink:#2b1d26; --muted:#8a7a84;
+    --brand:#8b2f5c; --brand2:#c85c8e; --gold:#c9a24b;
+    --green:#2e9e6b; --amber:#d9922b; --red:#d1495b; --line:#efe4ea;
+    --shadow:0 2px 10px rgba(139,47,92,.08);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); font-size:15px; line-height:1.45;
+    padding-bottom:90px;
+  }
+  /* Header */
+  header{
+    background:linear-gradient(135deg,var(--brand),var(--brand2));
+    color:#fff; padding:18px 16px calc(16px + env(safe-area-inset-top)); padding-top:calc(18px + env(safe-area-inset-top));
+    position:sticky; top:0; z-index:20; box-shadow:0 2px 12px rgba(139,47,92,.25);
+  }
+  header h1{margin:0; font-size:19px; font-weight:700; letter-spacing:.3px; display:flex; align-items:center; gap:8px}
+  header .sub{opacity:.85; font-size:12px; margin-top:2px}
+  .budget-row{display:flex; gap:8px; margin-top:12px; align-items:center}
+  .budget-row label{font-size:12px; opacity:.9; white-space:nowrap}
+  .budget-row input{
+    flex:1; border:none; border-radius:10px; padding:9px 12px; font-size:15px; font-weight:600;
+    background:rgba(255,255,255,.95); color:var(--brand);
+  }
+  /* Summary cards */
+  .summary{
+    display:grid; grid-template-columns:repeat(2,1fr); gap:10px; padding:14px 16px 4px;
+  }
+  .scard{
+    background:var(--card); border-radius:14px; padding:12px; box-shadow:var(--shadow);
+    border:1px solid var(--line);
+  }
+  .scard .k{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; font-weight:600}
+  .scard .v{font-size:18px; font-weight:800; margin-top:3px}
+  .scard.est .v{color:var(--brand)}
+  .scard.paid .v{color:var(--green)}
+  .scard.bal .v{color:var(--red)}
+  .scard.rem .v{color:var(--gold)}
+  .scard.rem.over .v{color:var(--red)}
+  /* progress */
+  .prog-wrap{padding:6px 16px 2px}
+  .prog{background:#f0e6ec; border-radius:20px; height:16px; overflow:hidden; display:flex; box-shadow:inset 0 1px 2px rgba(0,0,0,.06)}
+  .prog i{display:block; height:100%}
+  .prog .p1{background:var(--green)}
+  .prog .p2{background:var(--amber)}
+  .prog-legend{display:flex; gap:14px; font-size:11px; color:var(--muted); margin-top:6px; flex-wrap:wrap}
+  .prog-legend span{display:flex; align-items:center; gap:5px}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+  /* Toolbar */
+  .toolbar{display:flex; gap:8px; padding:12px 16px 6px; align-items:center}
+  .toolbar input.search{
+    flex:1; border:1px solid var(--line); border-radius:10px; padding:9px 12px; font-size:14px; background:#fff;
+  }
+  .toolbar select{
+    border:1px solid var(--line); border-radius:10px; padding:9px 8px; font-size:13px; background:#fff; color:var(--ink);
+  }
+  /* Item cards */
+  .list{padding:6px 16px}
+  .empty{text-align:center; color:var(--muted); padding:40px 20px; font-size:14px}
+  .empty .big{font-size:40px; margin-bottom:8px}
+  .item{
+    background:var(--card); border-radius:16px; padding:14px; margin-bottom:12px;
+    box-shadow:var(--shadow); border:1px solid var(--line); position:relative; overflow:hidden;
+  }
+  .item .accent{position:absolute; left:0; top:0; bottom:0; width:5px}
+  .item .top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px}
+  .item .cat{font-weight:800; font-size:16px}
+  .item .vendor{color:var(--muted); font-size:13px; margin-top:1px}
+  .badge{font-size:10.5px; font-weight:700; padding:4px 9px; border-radius:20px; white-space:nowrap; text-transform:uppercase; letter-spacing:.3px}
+  .b-paid{background:#e3f5ec; color:var(--green)}
+  .b-partial{background:#fdf1de; color:var(--amber)}
+  .b-pending{background:#fbe6e9; color:var(--red)}
+  .money-row{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:12px; text-align:center}
+  .money-row .m{background:#faf5f8; border-radius:10px; padding:8px 4px}
+  .money-row .m .k{font-size:10px; color:var(--muted); text-transform:uppercase}
+  .money-row .m .v{font-size:14px; font-weight:800; margin-top:2px}
+  .m.mest .v{color:var(--ink)} .m.mpaid .v{color:var(--green)} .m.mbal .v{color:var(--red)}
+  .mini-prog{height:6px; background:#f0e6ec; border-radius:10px; margin-top:10px; overflow:hidden}
+  .mini-prog i{display:block; height:100%; background:linear-gradient(90deg,var(--green),#5ac999)}
+  .contact{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px}
+  .contact a, .contact span.tag{
+    font-size:12px; text-decoration:none; color:var(--brand); background:#f7edf2;
+    padding:5px 10px; border-radius:8px; display:inline-flex; align-items:center; gap:5px; border:1px solid var(--line);
+  }
+  .contact a:active{background:#f0dde8}
+  .notes{font-size:12.5px; color:var(--muted); margin-top:10px; white-space:pre-wrap; background:#faf5f8; padding:8px 10px; border-radius:8px}
+  .meta{display:flex; gap:12px; flex-wrap:wrap; font-size:11.5px; color:var(--muted); margin-top:10px}
+  .item-actions{display:flex; gap:8px; margin-top:12px}
+  .item-actions button{
+    flex:1; border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:10px;
+    padding:9px; font-size:13px; font-weight:600; cursor:pointer;
+  }
+  .item-actions button.del{color:var(--red); border-color:#f3d3d9}
+  .item-actions button.pay{color:var(--green); border-color:#cfead d}
+  .item-actions button:active{transform:scale(.97)}
+  /* FAB */
+  .fab{
+    position:fixed; right:18px; bottom:calc(18px + env(safe-area-inset-bottom)); z-index:30;
+    background:linear-gradient(135deg,var(--brand),var(--brand2)); color:#fff; border:none;
+    width:60px; height:60px; border-radius:50%; font-size:32px; line-height:1;
+    box-shadow:0 6px 18px rgba(139,47,92,.45); cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .fab:active{transform:scale(.92)}
+  /* bottom bar */
+  .bottombar{
+    position:fixed; left:0; right:0; bottom:0; z-index:25; background:#fff; border-top:1px solid var(--line);
+    display:flex; padding:8px 12px calc(8px + env(safe-area-inset-bottom)); gap:8px;
+  }
+  .bottombar button{
+    flex:1; border:none; background:#f7edf2; color:var(--brand); border-radius:10px; padding:10px 4px;
+    font-size:12px; font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px;
+  }
+  .bottombar button .ic{font-size:18px}
+  .bottombar button:active{background:#f0dde8}
+  /* Modal */
+  .overlay{
+    position:fixed; inset:0; background:rgba(43,29,38,.55); z-index:40; display:none;
+    align-items:flex-end; justify-content:center;
+  }
+  .overlay.show{display:flex}
+  .sheet{
+    background:#fff; width:100%; max-width:520px; border-radius:22px 22px 0 0; max-height:92vh; overflow-y:auto;
+    padding:18px 18px calc(20px + env(safe-area-inset-bottom)); animation:slideup .25s ease;
+  }
+  @keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .sheet h2{margin:0 0 4px; font-size:18px; color:var(--brand)}
+  .sheet .grab{width:44px; height:5px; background:#e5d5de; border-radius:10px; margin:0 auto 12px}
+  .field{margin-bottom:12px}
+  .field label{display:block; font-size:12px; font-weight:700; color:var(--muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:.3px}
+  .field input, .field select, .field textarea{
+    width:100%; border:1px solid var(--line); border-radius:11px; padding:11px 12px; font-size:15px; background:#fff; color:var(--ink); font-family:inherit;
+  }
+  .field textarea{resize:vertical; min-height:60px}
+  .field.two{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .field.two > div{margin:0}
+  .hint{font-size:11px; color:var(--muted); margin-top:4px}
+  .sheet-actions{display:flex; gap:10px; margin-top:8px}
+  .sheet-actions button{flex:1; border:none; border-radius:12px; padding:14px; font-size:15px; font-weight:700; cursor:pointer}
+  .btn-save{background:linear-gradient(135deg,var(--brand),var(--brand2)); color:#fff}
+  .btn-cancel{background:#f2eaee; color:var(--muted)}
+  .btn-save:active,.btn-cancel:active{transform:scale(.98)}
+  .calc-note{font-size:12px; color:var(--green); font-weight:600; margin-top:-6px; margin-bottom:12px}
+  /* toast */
+  .toast{
+    position:fixed; left:50%; transform:translateX(-50%); bottom:100px; background:var(--ink); color:#fff;
+    padding:11px 18px; border-radius:24px; font-size:13px; z-index:60; opacity:0; transition:opacity .25s, transform .25s;
+    pointer-events:none; box-shadow:0 4px 14px rgba(0,0,0,.25); max-width:90%;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px)}
+  .hidden{display:none !important}
+  input[type=file]{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>💍 Wedding Budget Tracker</h1>
+  <div class="sub">Everything saved on your phone • works offline</div>
+  <div class="budget-row">
+    <label>Total Budget ₹</label>
+    <input id="totalBudget" type="number" inputmode="numeric" placeholder="e.g. 2000000" />
+  </div>
+</header>
+
+<!-- Summary -->
+<div class="summary">
+  <div class="scard est"><div class="k">Total Estimated</div><div class="v" id="sEst">₹0</div></div>
+  <div class="scard paid"><div class="k">Advance Paid</div><div class="v" id="sPaid">₹0</div></div>
+  <div class="scard bal"><div class="k">Balance Due</div><div class="v" id="sBal">₹0</div></div>
+  <div class="scard rem" id="remCard"><div class="k">Budget Left</div><div class="v" id="sRem">₹0</div></div>
+</div>
+
+<div class="prog-wrap">
+  <div class="prog">
+    <i class="p1" id="progPaid" style="width:0%"></i>
+    <i class="p2" id="progBal" style="width:0%"></i>
+  </div>
+  <div class="prog-legend">
+    <span><i class="dot" style="background:var(--green)"></i> Paid <b id="lgPaid" style="margin-left:2px">0%</b></span>
+    <span><i class="dot" style="background:var(--amber)"></i> Committed unpaid <b id="lgBal" style="margin-left:2px">0%</b></span>
+    <span><i class="dot" style="background:#f0e6ec"></i> Unallocated</span>
+  </div>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <input class="search" id="search" placeholder="🔍 Search category or vendor…" />
+  <select id="filterStatus">
+    <option value="">All</option>
+    <option value="Pending">Pending</option>
+    <option value="Partial">Partial</option>
+    <option value="Paid">Paid</option>
+  </select>
+  <select id="sortBy">
+    <option value="added">Sort: Added</option>
+    <option value="est">Estimated ↓</option>
+    <option value="bal">Balance ↓</option>
+    <option value="cat">A–Z</option>
+    <option value="date">Payment date</option>
+  </select>
+</div>
+
+<!-- List -->
+<div class="list" id="list"></div>
+
+<!-- FAB -->
+<button class="fab" id="fab" title="Add item">＋</button>
+
+<!-- Bottom bar -->
+<div class="bottombar">
+  <button id="btnExportJson"><span class="ic">💾</span>Backup</button>
+  <button id="btnImport"><span class="ic">📂</span>Restore</button>
+  <button id="btnExportCsv"><span class="ic">📊</span>CSV</button>
+  <button id="btnSeed"><span class="ic">✨</span>Sample</button>
+  <button id="btnInstall" class="hidden"><span class="ic">⬇️</span>Install</button>
+</div>
+<input type="file" id="fileInput" accept="application/json,.json" />
+
+<!-- Modal -->
+<div class="overlay" id="overlay">
+  <div class="sheet" id="sheet">
+    <div class="grab"></div>
+    <h2 id="sheetTitle">Add Item</h2>
+    <div class="field">
+      <label>Category / Item *</label>
+      <input id="fCat" placeholder="e.g. Venue, Catering, Photography" />
+    </div>
+    <div class="field two">
+      <div><label>Vendor Name</label><input id="fVendor" placeholder="Vendor / company" /></div>
+      <div><label>Contact Person</label><input id="fPerson" placeholder="Name" /></div>
+    </div>
+    <div class="field two">
+      <div><label>Phone Number</label><input id="fPhone" type="tel" inputmode="tel" placeholder="+91…" /></div>
+      <div><label>Target % Share</label><input id="fShare" type="number" inputmode="decimal" placeholder="%" /></div>
+    </div>
+    <div class="field"><label>Email / Address</label><input id="fEmail" placeholder="Email or address" /></div>
+    <div class="field two">
+      <div><label>Total Estimated ₹ *</label><input id="fEst" type="number" inputmode="numeric" placeholder="0" /></div>
+      <div><label>Advance Paid ₹</label><input id="fPaid" type="number" inputmode="numeric" placeholder="0" /></div>
+    </div>
+    <div class="calc-note" id="calcNote"></div>
+    <div class="field two">
+      <div><label>Payment Status</label>
+        <select id="fStatus">
+          <option value="auto">Auto (from amounts)</option>
+          <option value="Pending">Pending</option>
+          <option value="Partial">Partial</option>
+          <option value="Paid">Paid</option>
+        </select>
+      </div>
+      <div><label>Next / Due Date</label><input id="fDate" type="date" /></div>
+    </div>
+    <div class="field"><label>Payment Dates / History</label><input id="fPayDates" placeholder="e.g. 10 Jan advance, 5 Mar 50%" /></div>
+    <div class="field"><label>Notes</label><textarea id="fNotes" placeholder="Menu, décor details, terms…"></textarea></div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" id="btnCancel">Cancel</button>
+      <button class="btn-save" id="btnSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var LS_ITEMS="wbt_items_v1", LS_BUDGET="wbt_budget_v1";
+  var items=[], editId=null;
+
+  var $=function(id){return document.getElementById(id);};
+  function inr(n){
+    n = Number(n)||0;
+    // Indian grouping
+    var s = Math.round(n).toString();
+    var neg = s.charAt(0)==='-'; if(neg) s=s.slice(1);
+    var last3 = s.length>3 ? s.slice(-3) : s;
+    var rest = s.length>3 ? s.slice(0,-3) : '';
+    if(rest) last3 = ','+last3;
+    rest = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+    return '₹'+(neg?'-':'')+rest+last3;
+  }
+  function uid(){return 'i'+Math.random().toString(36).slice(2,9);}
+  function toast(msg){var t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(function(){t.classList.remove('show');},1900);}
+
+  function load(){
+    try{ items = JSON.parse(localStorage.getItem(LS_ITEMS)||'[]'); }catch(e){ items=[]; }
+    if(!Array.isArray(items)) items=[];
+    var b = localStorage.getItem(LS_BUDGET); if(b!==null) $('totalBudget').value=b;
+  }
+  function save(){ localStorage.setItem(LS_ITEMS, JSON.stringify(items)); }
+  function saveBudget(){ localStorage.setItem(LS_BUDGET, $('totalBudget').value||''); }
+
+  function statusOf(it){
+    if(it.status && it.status!=='auto') return it.status;
+    var est=Number(it.est)||0, paid=Number(it.paid)||0;
+    if(paid<=0) return 'Pending';
+    if(paid>=est && est>0) return 'Paid';
+    return 'Partial';
+  }
+  function balOf(it){ return Math.max(0,(Number(it.est)||0)-(Number(it.paid)||0)); }
+
+  function recalcSummary(){
+    var est=0,paid=0;
+    items.forEach(function(it){ est+=Number(it.est)||0; paid+=Number(it.paid)||0; });
+    var bal=Math.max(0,est-paid);
+    var budget=Number($('totalBudget').value)||0;
+    $('sEst').textContent=inr(est);
+    $('sPaid').textContent=inr(paid);
+    $('sBal').textContent=inr(bal);
+    var rem = budget - est;
+    $('sRem').textContent = budget? inr(rem) : '—';
+    var remCard=$('remCard');
+    remCard.classList.toggle('over', budget>0 && rem<0);
+    remCard.querySelector('.k').textContent = (budget>0 && rem<0)? 'Over Budget' : 'Budget Left';
+    // progress based on budget (fallback to est)
+    var base = budget>0? budget : est;
+    var pPaid = base? Math.min(100, paid/base*100):0;
+    var pBal = base? Math.min(100-pPaid, bal/base*100):0;
+    $('progPaid').style.width=pPaid+'%';
+    $('progBal').style.width=pBal+'%';
+    $('lgPaid').textContent=Math.round(pPaid)+'%';
+    $('lgBal').textContent=Math.round(pBal)+'%';
+  }
+
+  function accentColor(st){ return st==='Paid'?'var(--green)':st==='Partial'?'var(--amber)':'var(--red)'; }
+
+  function render(){
+    recalcSummary();
+    var q=($('search').value||'').toLowerCase().trim();
+    var fs=$('filterStatus').value;
+    var sort=$('sortBy').value;
+    var arr=items.slice();
+    // filter
+    arr=arr.filter(function(it){
+      var st=statusOf(it);
+      if(fs && st!==fs) return false;
+      if(q){
+        var hay=((it.cat||'')+' '+(it.vendor||'')+' '+(it.person||'')+' '+(it.notes||'')).toLowerCase();
+        if(hay.indexOf(q)<0) return false;
+      }
+      return true;
+    });
+    // sort
+    arr.sort(function(a,b){
+      if(sort==='est') return (Number(b.est)||0)-(Number(a.est)||0);
+      if(sort==='bal') return balOf(b)-balOf(a);
+      if(sort==='cat') return (a.cat||'').localeCompare(b.cat||'');
+      if(sort==='date') return (a.date||'9999').localeCompare(b.date||'9999');
+      return (a._i||0)-(b._i||0);
+    });
+
+    var list=$('list');
+    if(!items.length){
+      list.innerHTML='<div class="empty"><div class="big">💐</div>No items yet.<br>Tap ＋ to add your first expense,<br>or tap ✨ Sample to see an example.</div>';
+      return;
+    }
+    if(!arr.length){ list.innerHTML='<div class="empty"><div class="big">🔍</div>No matches.</div>'; return; }
+
+    list.innerHTML=arr.map(function(it){
+      var st=statusOf(it), bal=balOf(it), est=Number(it.est)||0, paid=Number(it.paid)||0;
+      var pctPaid=est? Math.min(100, paid/est*100):0;
+      var badgeCls = st==='Paid'?'b-paid':st==='Partial'?'b-partial':'b-pending';
+      var contacts='';
+      if(it.phone){
+        var tel=it.phone.replace(/[^+\d]/g,'');
+        contacts+='<a href="tel:'+esc(tel)+'">📞 '+esc(it.phone)+'</a>';
+        contacts+='<a href="https://wa.me/'+esc(tel.replace(/^\+/,''))+'" target="_blank" rel="noopener">💬 WhatsApp</a>';
+      }
+      if(it.email){
+        if(it.email.indexOf('@')>0) contacts+='<a href="mailto:'+esc(it.email)+'">✉️ '+esc(it.email)+'</a>';
+        else contacts+='<span class="tag">📍 '+esc(it.email)+'</span>';
+      }
+      var meta=[];
+      if(it.share) meta.push('🎯 Target '+esc(it.share)+'%');
+      if(it.date) meta.push('📅 Due '+fmtDate(it.date));
+      if(it.payDates) meta.push('🧾 '+esc(it.payDates));
+      return '<div class="item">'+
+        '<div class="accent" style="background:'+accentColor(st)+'"></div>'+
+        '<div class="top"><div><div class="cat">'+esc(it.cat||'Untitled')+'</div>'+
+          (it.vendor||it.person?'<div class="vendor">'+esc([it.vendor,it.person].filter(Boolean).join(' • '))+'</div>':'')+
+        '</div><span class="badge '+badgeCls+'">'+st+'</span></div>'+
+        '<div class="money-row">'+
+          '<div class="m mest"><div class="k">Estimated</div><div class="v">'+inr(est)+'</div></div>'+
+          '<div class="m mpaid"><div class="k">Paid</div><div class="v">'+inr(paid)+'</div></div>'+
+          '<div class="m mbal"><div class="k">Balance</div><div class="v">'+inr(bal)+'</div></div>'+
+        '</div>'+
+        '<div class="mini-prog"><i style="width:'+pctPaid+'%"></i></div>'+
+        (contacts?'<div class="contact">'+contacts+'</div>':'')+
+        (meta.length?'<div class="meta">'+meta.map(function(m){return '<span>'+m+'</span>';}).join('')+'</div>':'')+
+        (it.notes?'<div class="notes">'+esc(it.notes)+'</div>':'')+
+        '<div class="item-actions">'+
+          (bal>0?'<button class="pay" data-pay="'+it.id+'">✓ Mark Paid</button>':'')+
+          '<button data-edit="'+it.id+'">✏️ Edit</button>'+
+          '<button class="del" data-del="'+it.id+'">🗑 Delete</button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function fmtDate(d){ if(!d)return''; var p=d.split('-'); if(p.length!==3)return d; var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return p[2]+' '+m[+p[1]-1]+' '+p[0]; }
+
+  // ---- Modal ----
+  function openSheet(it){
+    editId = it? it.id : null;
+    $('sheetTitle').textContent = it? 'Edit Item' : 'Add Item';
+    $('fCat').value=it?it.cat||'':''; $('fVendor').value=it?it.vendor||'':'';
+    $('fPerson').value=it?it.person||'':''; $('fPhone').value=it?it.phone||'':'';
+    $('fEmail').value=it?it.email||'':''; $('fShare').value=it?it.share||'':'';
+    $('fEst').value=it?it.est||'':''; $('fPaid').value=it?it.paid||'':'';
+    $('fStatus').value=it?(it.status||'auto'):'auto'; $('fDate').value=it?it.date||'':'';
+    $('fPayDates').value=it?it.payDates||'':''; $('fNotes').value=it?it.notes||'':'';
+    updateCalc();
+    $('overlay').classList.add('show');
+    setTimeout(function(){$('fCat').focus();},200);
+  }
+  function closeSheet(){ $('overlay').classList.remove('show'); }
+  function updateCalc(){
+    var est=Number($('fEst').value)||0, paid=Number($('fPaid').value)||0;
+    var bal=Math.max(0,est-paid);
+    $('calcNote').textContent = est? ('Balance Due: '+inr(bal)+(paid>est?'  ⚠ Paid exceeds estimate':'')) : '';
+  }
+  function saveItem(){
+    var cat=$('fCat').value.trim();
+    if(!cat){ toast('Category / Item is required'); $('fCat').focus(); return; }
+    var data={
+      cat:cat, vendor:$('fVendor').value.trim(), person:$('fPerson').value.trim(),
+      phone:$('fPhone').value.trim(), email:$('fEmail').value.trim(),
+      share:$('fShare').value.trim(), est:Number($('fEst').value)||0, paid:Number($('fPaid').value)||0,
+      status:$('fStatus').value, date:$('fDate').value, payDates:$('fPayDates').value.trim(),
+      notes:$('fNotes').value.trim()
+    };
+    if(editId){
+      var idx=items.findIndex(function(x){return x.id===editId;});
+      if(idx>=0){ items[idx]=Object.assign(items[idx],data); }
+      toast('Updated ✓');
+    }else{
+      data.id=uid(); data._i=Date.now()+items.length; items.push(data);
+      toast('Added ✓');
+    }
+    save(); render(); closeSheet();
+  }
+
+  // ---- Export / Import ----
+  function download(name, content, type){
+    var blob=new Blob([content],{type:type});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(function(){URL.revokeObjectURL(url); a.remove();},100);
+  }
+  function exportJson(){
+    var payload={ app:'wedding-budget-tracker', version:1, budget:$('totalBudget').value||'', items:items };
+    download('wedding-budget-backup.json', JSON.stringify(payload,null,2), 'application/json');
+    toast('Backup downloaded 💾');
+  }
+  function exportCsv(){
+    var cols=['Category/Item','Vendor Name','Contact Person','Phone Number','Email/Address','Target % Share','Total Estimated (INR)','Advance Paid (INR)','Balance Due (INR)','Payment Status','Payment Dates','Notes'];
+    var rows=[cols.join(',')];
+    items.forEach(function(it){
+      var r=[it.cat,it.vendor,it.person,it.phone,it.email,it.share,it.est,it.paid,balOf(it),statusOf(it),it.payDates,it.notes];
+      rows.push(r.map(csvCell).join(','));
+    });
+    // totals row
+    var est=items.reduce(function(s,it){return s+(Number(it.est)||0);},0);
+    var paid=items.reduce(function(s,it){return s+(Number(it.paid)||0);},0);
+    rows.push(['TOTAL','','','','','',est,paid,Math.max(0,est-paid),'','',''].map(csvCell).join(','));
+    download('wedding-budget.csv', '﻿'+rows.join('\r\n'), 'text/csv');
+    toast('CSV downloaded 📊');
+  }
+  function csvCell(v){ v=v==null?'':String(v); return /[",\r\n]/.test(v)? '"'+v.replace(/"/g,'""')+'"' : v; }
+  function importJson(file){
+    var reader=new FileReader();
+    reader.onload=function(){
+      try{
+        var d=JSON.parse(reader.result);
+        var incoming = Array.isArray(d)? d : d.items;
+        if(!Array.isArray(incoming)) throw 0;
+        if(!confirm('Restore '+incoming.length+' item(s)? This replaces your current list.')) return;
+        items=incoming.map(function(it,i){ it.id=it.id||uid(); if(it._i==null) it._i=i; return it; });
+        if(d.budget!=null){ $('totalBudget').value=d.budget; saveBudget(); }
+        save(); render(); toast('Restored '+items.length+' items ✓');
+      }catch(e){ toast('Could not read that file'); }
+    };
+    reader.readAsText(file);
+  }
+
+  function seed(){
+    if(items.length && !confirm('Add sample items to your list?')) return;
+    var samples=[
+      {cat:'Venue & Banquet',vendor:'Grand Palace Gardens',person:'Mr. Rajesh',phone:'+919876543210',email:'events@grandpalace.in',share:'25',est:500000,paid:150000,status:'auto',date:'2026-11-20',payDates:'Booking advance 5 Aug',notes:'Includes hall + lawn, 500 pax'},
+      {cat:'Catering',vendor:'Spice Route Caterers',person:'Anita',phone:'+919812345678',email:'hello@spiceroute.in',share:'20',est:400000,paid:0,status:'auto',date:'2026-11-15',payDates:'',notes:'Veg + non-veg, 8 live counters'},
+      {cat:'Photography & Video',vendor:'Candid Frames Studio',person:'Vikram',phone:'+919900112233',email:'book@candidframes.in',share:'8',est:150000,paid:150000,status:'auto',date:'2026-10-01',payDates:'Full paid 1 Oct',notes:'Pre-wedding + 2 day coverage, drone'},
+      {cat:'Décor & Flowers',vendor:'Bloom & Bling',person:'Priya',phone:'+919765432100',email:'Sector 18, Noida',share:'12',est:220000,paid:50000,status:'auto',date:'2026-11-18',payDates:'Advance 10 Aug',notes:'Stage, entrance, mandap florals'}
+    ];
+    samples.forEach(function(s,i){ s.id=uid(); s._i=Date.now()+i; items.push(s); });
+    if(!$('totalBudget').value){ $('totalBudget').value='2000000'; saveBudget(); }
+    save(); render(); toast('Sample data added ✨');
+  }
+
+  // ---- Events ----
+  $('fab').onclick=function(){ openSheet(null); };
+  $('btnCancel').onclick=closeSheet;
+  $('btnSave').onclick=saveItem;
+  $('overlay').onclick=function(e){ if(e.target===$('overlay')) closeSheet(); };
+  $('fEst').oninput=updateCalc; $('fPaid').oninput=updateCalc;
+  $('search').oninput=render; $('filterStatus').onchange=render; $('sortBy').onchange=render;
+  $('totalBudget').oninput=function(){ saveBudget(); recalcSummary(); };
+  $('btnExportJson').onclick=exportJson;
+  $('btnExportCsv').onclick=exportCsv;
+  $('btnSeed').onclick=seed;
+  $('btnImport').onclick=function(){ $('fileInput').click(); };
+  $('fileInput').onchange=function(e){ if(e.target.files[0]) importJson(e.target.files[0]); e.target.value=''; };
+
+  $('list').addEventListener('click', function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    var id=b.getAttribute('data-edit')||b.getAttribute('data-del')||b.getAttribute('data-pay');
+    var it=items.find(function(x){return x.id===id;}); if(!it) return;
+    if(b.hasAttribute('data-edit')) openSheet(it);
+    else if(b.hasAttribute('data-del')){ if(confirm('Delete "'+(it.cat||'this item')+'"?')){ items=items.filter(function(x){return x.id!==id;}); save(); render(); toast('Deleted'); } }
+    else if(b.hasAttribute('data-pay')){ it.paid=Number(it.est)||0; it.status='auto'; save(); render(); toast('Marked as fully paid ✓'); }
+  });
+
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeSheet(); });
+
+  load(); render();
+
+  // ---- PWA install prompt ----
+  var deferredPrompt=null;
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault(); deferredPrompt=e;
+    var btn=$('btnInstall'); if(btn){ btn.classList.remove('hidden'); }
+  });
+  var ib=$('btnInstall');
+  if(ib){ ib.onclick=function(){
+    if(!deferredPrompt){ toast('Use browser menu → Add to Home Screen'); return; }
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(){ deferredPrompt=null; ib.classList.add('hidden'); });
+  }; }
+  window.addEventListener('appinstalled', function(){ if(ib) ib.classList.add('hidden'); toast('Installed 🎉'); });
+})();
+
+// ---- Service worker (offline) ----
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
