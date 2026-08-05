@@ -68,7 +68,7 @@
     --gold:#e07a5f; --gold2:#f0a184; --rose:#ef8f78; --line:#dfeceb;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;padding:0}
+  html,body{margin:0;padding:0; width:100%; max-width:100%; overflow-x:hidden}
   body{
     font-family:var(--sans);
     background:
@@ -135,6 +135,11 @@
   .hero input:focus{outline:none}
   .hero input::placeholder{color:color-mix(in srgb,var(--brand) 28%,#fff); font-weight:500}
   /* Summary cards */
+  /* grid cells must be allowed to shrink below their content width, or long
+     numbers/emails push the layout wider than the screen (horizontal scroll) */
+  .summary > *, .money-row > *, .kpis > *, .field.two > *, .themegrid > *{min-width:0}
+  .scard .v, .money-row .m .v, .kpi .kv{overflow-wrap:anywhere; word-break:break-word}
+  .contact a, .contact span.tag{max-width:100%; overflow-wrap:anywhere}
   .summary{
     display:grid; grid-template-columns:repeat(2,1fr); gap:11px; padding:14px 16px 4px;
   }
@@ -187,7 +192,7 @@
   .cathead .chev{font-size:12px; color:var(--brand2); transition:transform .25s; flex:none}
   .cathead.collapsed .chev{transform:rotate(-90deg)}
   .cathead .cn{flex:1; min-width:0}
-  .cathead .catname{font-family:var(--serif); font-weight:600; font-size:18px; color:var(--brand-deep); display:flex; align-items:center; gap:9px}
+  .cathead .catname{font-family:var(--serif); font-weight:600; font-size:18px; color:var(--brand-deep); display:flex; align-items:center; gap:9px; flex-wrap:wrap; overflow-wrap:anywhere}
   .cathead .catname .cnt{font-family:var(--sans); font-size:11px; font-weight:700; color:#fff; background:linear-gradient(135deg,var(--brand),var(--brand2)); border-radius:20px; padding:2px 9px; box-shadow:0 2px 6px rgba(19,122,95,.32)}
   .cathead .catsub{font-size:11.5px; color:var(--muted); margin-top:3px; display:flex; gap:12px; flex-wrap:wrap}
   .cathead .catsub b{font-weight:800; font-family:var(--serif)}
@@ -211,8 +216,9 @@
   }
   .item .accent{position:absolute; left:0; top:0; bottom:0; width:5px}
   .item .top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px}
-  .item .cat{font-family:var(--serif); font-weight:600; font-size:17px; color:var(--ink)}
-  .item .vendor{color:var(--muted); font-size:13px; margin-top:2px}
+  .item .top > div:first-child{min-width:0; flex:1}
+  .item .cat{font-family:var(--serif); font-weight:600; font-size:17px; color:var(--ink); overflow-wrap:anywhere}
+  .item .vendor{color:var(--muted); font-size:13px; margin-top:2px; overflow-wrap:anywhere}
   .badge{font-size:10px; font-weight:700; padding:4px 10px; border-radius:20px; white-space:nowrap; text-transform:uppercase; letter-spacing:.4px}
   .b-paid{background:#e3f5ec; color:var(--green)}
   .b-partial{background:#fdf1de; color:var(--amber)}
