@@ -262,6 +262,58 @@
   }
   .bottombar button .ic{font-size:19px}
   .bottombar button:active{background:color-mix(in srgb,var(--brand) 11%,#fff)}
+  /* Install banner */
+  .installbar{
+    margin:0 0 14px; display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:linear-gradient(135deg,var(--brand),var(--brand2)); color:#fff;
+    border-radius:16px; padding:12px 14px; box-shadow:var(--shadow-sm);
+  }
+  .installbar .ib-txt{display:flex; align-items:center; gap:9px; font-size:13.5px; font-weight:600; min-width:0}
+  .installbar .ib-txt .ic{width:20px; height:20px; flex:none}
+  .installbar .ib-btns{display:flex; align-items:center; gap:6px; flex:none}
+  .installbar #btnInstall{
+    border:none; background:#fff; color:var(--brand-deep); font-weight:700; font-size:13px;
+    padding:8px 15px; border-radius:11px; cursor:pointer;
+  }
+  .installbar #btnInstall:active{transform:scale(.97)}
+  .installbar #btnInstallClose{
+    border:none; background:rgba(255,255,255,.22); color:#fff; width:30px; height:30px;
+    border-radius:9px; font-size:14px; cursor:pointer; line-height:1;
+  }
+  /* Analysis dashboard */
+  .stat-block{margin-bottom:18px}
+  .stat-block h3{
+    margin:0 0 10px; font-size:12px; font-weight:700; color:var(--brand2);
+    text-transform:uppercase; letter-spacing:.6px;
+  }
+  .kpis{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .kpi{
+    background:color-mix(in srgb,var(--brand) 5%,var(--card)); border:1px solid var(--line);
+    border-radius:14px; padding:12px 13px;
+  }
+  .kpi .kv{font-family:var(--serif); font-size:20px; font-weight:600; color:var(--brand-deep)}
+  .kpi .kl{font-size:11px; color:var(--muted); margin-top:2px; font-weight:600}
+  .kpi.good .kv{color:var(--green)} .kpi.warn .kv{color:var(--amber)} .kpi.bad .kv{color:var(--red)}
+  /* category bars */
+  .catbar{margin-bottom:11px}
+  .catbar .cb-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px; gap:8px}
+  .catbar .cb-name{font-size:13px; font-weight:700; color:var(--ink); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .catbar .cb-amt{font-size:12px; font-weight:700; color:var(--brand-deep); flex:none}
+  .catbar .cb-pct{font-size:11px; color:var(--muted); flex:none; margin-left:6px}
+  .catbar .cb-track{height:9px; border-radius:6px; background:color-mix(in srgb,var(--brand) 8%,#fff); overflow:hidden; display:flex}
+  .catbar .cb-paid{background:var(--green); height:100%}
+  .catbar .cb-due{background:var(--amber); height:100%}
+  .stat-legend{display:flex; gap:14px; font-size:11px; color:var(--muted); margin:2px 0 4px}
+  .stat-legend i{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; vertical-align:middle}
+  .stat-empty{text-align:center; color:var(--muted); font-size:13px; padding:20px 0}
+  /* donut */
+  .donut-wrap{display:flex; align-items:center; gap:16px}
+  .donut{width:120px; height:120px; flex:none}
+  .donut-legend{flex:1; min-width:0; display:flex; flex-direction:column; gap:7px}
+  .donut-legend .dl{display:flex; align-items:center; gap:8px; font-size:12px}
+  .donut-legend .dl i{width:11px; height:11px; border-radius:3px; flex:none}
+  .donut-legend .dl .nm{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--ink); font-weight:600}
+  .donut-legend .dl .pc{color:var(--muted); font-weight:700; flex:none}
   /* Modal */
   .overlay{
     position:fixed; inset:0; background:rgba(43,29,38,.55); z-index:40; display:none;
@@ -374,6 +426,18 @@
   </div>
 </header>
 
+<!-- Install app banner -->
+<div class="installbar hidden" id="installBar">
+  <div class="ib-txt">
+    <svg class="ic"><use href="#i-download"/></svg>
+    <span id="ibText">Install this app on your phone</span>
+  </div>
+  <div class="ib-btns">
+    <button id="btnInstall">Install</button>
+    <button id="btnInstallClose" aria-label="Dismiss">✕</button>
+  </div>
+</div>
+
 <!-- Hero budget card (distinct from search) -->
 <div class="hero">
   <div class="ico"><svg class="ic"><use href="#i-crown"/></svg></div>
@@ -432,11 +496,11 @@
 
 <!-- Bottom bar -->
 <div class="bottombar">
+  <button id="btnStats"><svg class="ic"><use href="#i-chart"/></svg>Stats</button>
   <button id="btnExportJson"><svg class="ic"><use href="#i-save"/></svg>Backup</button>
   <button id="btnImport"><svg class="ic"><use href="#i-folder"/></svg>Restore</button>
-  <button id="btnExportCsv"><svg class="ic"><use href="#i-chart"/></svg>CSV</button>
+  <button id="btnExportCsv"><svg class="ic"><use href="#i-receipt"/></svg>CSV</button>
   <button id="btnTheme"><svg class="ic"><use href="#i-palette"/></svg>Theme</button>
-  <button id="btnInstall" class="hidden"><svg class="ic"><use href="#i-download"/></svg>Install</button>
 </div>
 <input type="file" id="fileInput" accept="application/json,.json" />
 
@@ -485,6 +549,18 @@
     <div class="sheet-actions">
       <button class="btn-cancel" id="btnCancel">Cancel</button>
       <button class="btn-save" id="btnSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Analysis dashboard -->
+<div class="overlay" id="statsOverlay">
+  <div class="sheet" id="statsSheet">
+    <div class="grab"></div>
+    <h2>Budget Analysis</h2>
+    <div id="statsBody"></div>
+    <div class="sheet-actions" style="margin-top:6px">
+      <button class="btn-cancel" id="btnStatsClose">Done</button>
     </div>
   </div>
 </div>
@@ -614,7 +690,7 @@
 
     var list=$('list');
     if(!items.length){
-      list.innerHTML='<div class="empty"><div class="big"><svg class="ic"><use href="#i-flower"/></svg></div>No items yet.<br>Tap + to add your first expense,<br>or tap Sample to see an example.</div>';
+      list.innerHTML='<div class="empty"><div class="big"><svg class="ic"><use href="#i-flower"/></svg></div>No items yet.<br>Tap the + button to add<br>your first expense.</div>';
       return;
     }
     if(!arr.length){ list.innerHTML='<div class="empty"><div class="big"><svg class="ic"><use href="#i-search"/></svg></div>No matches.</div>'; return; }
@@ -836,6 +912,102 @@
   function openThemePicker(){ renderThemeGrid(); $('themeOverlay').classList.add('show'); }
   function closeThemePicker(){ $('themeOverlay').classList.remove('show'); }
 
+  // ---- Analysis dashboard ----
+  var DONUT_COLORS=['#137a5f','#c19a3f','#4b6cc0','#c04068','#d17a54','#0f8f8f','#7d2b56','#2fa07c','#e07a5f','#a8497f','#8a938c'];
+  function renderStats(){
+    var body=$('statsBody');
+    if(!items.length){ body.innerHTML='<div class="stat-empty">Add some items first to see your analysis.</div>'; return; }
+
+    var est=0,paid=0,cnt=items.length, paidCnt=0, partCnt=0, pendCnt=0;
+    var cats={};
+    items.forEach(function(it){
+      var e=Number(it.est)||0, p=Number(it.paid)||0;
+      est+=e; paid+=p;
+      var st=statusOf(it);
+      if(st==='Paid') paidCnt++; else if(st==='Partial') partCnt++; else pendCnt++;
+      var c=it.cat||'Uncategorised';
+      if(!cats[c]) cats[c]={est:0,paid:0,n:0};
+      cats[c].est+=e; cats[c].paid+=p; cats[c].n++;
+    });
+    var due=Math.max(0,est-paid);
+    var budget=Number($('totalBudget').value)||0;
+    var rem=budget-est;
+    var paidPct=est?Math.round(paid/est*100):0;
+
+    // sorted categories by estimated spend
+    var catArr=Object.keys(cats).map(function(k){ return {name:k,est:cats[k].est,paid:cats[k].paid,due:Math.max(0,cats[k].est-cats[k].paid),n:cats[k].n}; });
+    catArr.sort(function(a,b){ return b.est-a.est; });
+    var maxEst=catArr.length?catArr[0].est:0;
+    var top=catArr[0];
+
+    var h='';
+    // KPI grid
+    h+='<div class="stat-block"><div class="kpis">';
+    h+=kpi(inr(est),'Total committed');
+    h+=kpi(paidPct+'%', 'Paid so far', paidPct>=100?'good':paidPct>0?'warn':'');
+    h+=kpi(inr(due),'Still to pay', due>0?'bad':'good');
+    if(budget>0) h+=kpi(inr(Math.abs(rem)), rem<0?'Over budget':'Budget left', rem<0?'bad':'good');
+    else h+=kpi(String(cnt),'Line items');
+    h+='</div></div>';
+
+    // spend by category — donut
+    if(catArr.length){
+      h+='<div class="stat-block"><h3>Spend by Category</h3>';
+      h+='<div class="donut-wrap">'+donutSvg(catArr,est)+'<div class="donut-legend">';
+      catArr.slice(0,7).forEach(function(c,i){
+        var pc=est?Math.round(c.est/est*100):0;
+        h+='<div class="dl"><i style="background:'+DONUT_COLORS[i%DONUT_COLORS.length]+'"></i><span class="nm">'+esc(c.name)+'</span><span class="pc">'+pc+'%</span></div>';
+      });
+      if(catArr.length>7){
+        var otherPc=0; catArr.slice(7).forEach(function(c){ otherPc+=c.est; }); otherPc=est?Math.round(otherPc/est*100):0;
+        h+='<div class="dl"><i style="background:#c9c2cc"></i><span class="nm">Other</span><span class="pc">'+otherPc+'%</span></div>';
+      }
+      h+='</div></div></div>';
+    }
+
+    // payment progress per category
+    h+='<div class="stat-block"><h3>Payment Progress by Category</h3>';
+    h+='<div class="stat-legend"><span><i style="background:var(--green)"></i>Paid</span><span><i style="background:var(--amber)"></i>Due</span></div>';
+    catArr.forEach(function(c){
+      var pPaid=c.est?c.paid/c.est*100:0; if(pPaid>100)pPaid=100;
+      var pDue=100-pPaid;
+      var pct=c.est?Math.round(c.paid/c.est*100):0;
+      h+='<div class="catbar"><div class="cb-top"><span class="cb-name">'+esc(c.name)+'</span><span class="cb-amt">'+inr(c.est)+'</span><span class="cb-pct">'+pct+'% paid</span></div>';
+      h+='<div class="cb-track"><i class="cb-paid" style="width:'+pPaid+'%"></i><i class="cb-due" style="width:'+pDue+'%"></i></div></div>';
+    });
+    h+='</div>';
+
+    // payment status breakdown
+    h+='<div class="stat-block"><h3>Item Status</h3><div class="kpis">';
+    h+=kpi(String(paidCnt),'Fully paid','good');
+    h+=kpi(String(partCnt),'Partially paid','warn');
+    h+=kpi(String(pendCnt),'Not started','bad');
+    if(top) h+=kpi(esc(top.name),'Biggest category');
+    h+='</div></div>';
+
+    body.innerHTML=h;
+  }
+  function kpi(v,l,cls){ return '<div class="kpi'+(cls?' '+cls:'')+'"><div class="kv">'+v+'</div><div class="kl">'+l+'</div></div>'; }
+  function donutSvg(catArr, total){
+    if(!total){ return '<svg class="donut" viewBox="0 0 42 42"></svg>'; }
+    var r=15.915, circ=2*Math.PI*r, off=0, segs='';
+    // combine beyond 7 into "other"
+    var show=catArr.slice(0,7).slice();
+    var otherEst=0; catArr.slice(7).forEach(function(c){ otherEst+=c.est; });
+    var list=show.map(function(c,i){ return {est:c.est,col:DONUT_COLORS[i%DONUT_COLORS.length]}; });
+    if(otherEst>0) list.push({est:otherEst,col:'#c9c2cc'});
+    list.forEach(function(s){
+      var len=s.est/total*circ;
+      segs+='<circle cx="21" cy="21" r="'+r+'" fill="none" stroke="'+s.col+'" stroke-width="6" stroke-dasharray="'+len+' '+(circ-len)+'" stroke-dashoffset="'+(-off)+'"></circle>';
+      off+=len;
+    });
+    return '<svg class="donut" viewBox="0 0 42 42"><g transform="rotate(-90 21 21)">'+
+           '<circle cx="21" cy="21" r="'+r+'" fill="none" stroke="color-mix(in srgb,var(--brand) 8%,#fff)" stroke-width="6"></circle>'+
+           segs+'</g></svg>';
+  }
+  function openStats(){ renderStats(); $('statsOverlay').classList.add('show'); }
+  function closeStats(){ $('statsOverlay').classList.remove('show'); }
+
   // ---- Events ----
   $('fab').onclick=function(){ openSheet(null); };
   $('btnCancel').onclick=closeSheet;
@@ -847,6 +1019,9 @@
   $('weddingDate').onchange=function(){ localStorage.setItem(LS_WDATE, this.value||''); updateCountdown(); };
   $('btnExportJson').onclick=exportJson;
   $('btnExportCsv').onclick=exportCsv;
+  $('btnStats').onclick=openStats;
+  $('btnStatsClose').onclick=closeStats;
+  $('statsOverlay').onclick=function(e){ if(e.target===$('statsOverlay')) closeStats(); };
   $('btnTheme').onclick=openThemePicker;
   $('btnThemeClose').onclick=closeThemePicker;
   $('themeOverlay').onclick=function(e){ if(e.target===$('themeOverlay')) closeThemePicker(); };
@@ -881,24 +1056,48 @@
     else if(b.hasAttribute('data-pay')){ it.paid=Number(it.est)||0; it.status='auto'; save(); render(); toast('Marked as fully paid ✓'); }
   });
 
-  document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ closeSheet(); closeThemePicker(); } });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ closeSheet(); closeThemePicker(); closeStats(); } });
 
   applyTheme(localStorage.getItem(LS_THEME)||'emerald');
   load(); render();
 
   // ---- PWA install prompt ----
+  var LS_IBHIDE="wbt_ibhide_v1";
   var deferredPrompt=null;
+  var bar=$('installBar'), ib=$('btnInstall');
+  var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  function showInstallBar(){
+    if(isStandalone) return;                              // already installed
+    if(localStorage.getItem(LS_IBHIDE)==='1') return;      // user dismissed
+    if(bar) bar.classList.remove('hidden');
+  }
+  // Android/Chrome: fires when installable
   window.addEventListener('beforeinstallprompt', function(e){
-    e.preventDefault(); deferredPrompt=e;
-    var btn=$('btnInstall'); if(btn){ btn.classList.remove('hidden'); }
+    e.preventDefault(); deferredPrompt=e; showInstallBar();
   });
-  var ib=$('btnInstall');
+  // iOS Safari has no prompt event — show manual instructions instead
+  if(isIOS && !isStandalone){
+    if($('ibText')) $('ibText').textContent='Install: tap Share, then “Add to Home Screen”';
+    showInstallBar();
+  }
+
   if(ib){ ib.onclick=function(){
-    if(!deferredPrompt){ toast('Use browser menu → Add to Home Screen'); return; }
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(function(){ deferredPrompt=null; ib.classList.add('hidden'); });
+    if(deferredPrompt){
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function(){ deferredPrompt=null; if(bar) bar.classList.add('hidden'); });
+    } else if(isIOS){
+      toast('Tap the Share icon, then “Add to Home Screen”');
+    } else {
+      toast('Use your browser menu → Install app / Add to Home Screen');
+    }
   }; }
-  window.addEventListener('appinstalled', function(){ if(ib) ib.classList.add('hidden'); toast('Installed'); });
+  if($('btnInstallClose')) $('btnInstallClose').onclick=function(){
+    if(bar) bar.classList.add('hidden');
+    try{ localStorage.setItem(LS_IBHIDE,'1'); }catch(e){}
+  };
+  window.addEventListener('appinstalled', function(){ if(bar) bar.classList.add('hidden'); toast('Installed ✓'); });
 })();
 
 // ---- Service worker (offline) ----

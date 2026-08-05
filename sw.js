@@ -1,5 +1,5 @@
 /* Wedding Budget Tracker — service worker (offline cache) */
-var CACHE = 'wbt-v7';
+var CACHE = 'wbt-v8';
 var ASSETS = [
   './',
   './index.html',
@@ -24,21 +24,47 @@ self.addEventListener('activate', function(e){
   );
 });
 
+function isAppShell(req){
+  // the HTML document + core code should always be fresh when online
+  if(req.mode === 'navigate') return true;
+  var u = req.url;
+  return u.indexOf('/index.html') >= 0 ||
+         u.indexOf('/manifest.webmanifest') >= 0 ||
+         u.replace(self.location.origin,'').replace(/\?.*$/,'').match(/\/$/);
+}
+
 self.addEventListener('fetch', function(e){
   if(e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then(function(cached){
-      if(cached) return cached;
-      return fetch(e.request).then(function(res){
-        // cache same-origin successful responses for future offline use
+
+  // Network-first for the app shell → users always get the latest version,
+  // fall back to cache only when offline. No manual versioning needed.
+  if(isAppShell(e.request)){
+    e.respondWith(
+      fetch(e.request).then(function(res){
         if(res && res.status===200 && e.request.url.indexOf(self.location.origin)===0){
           var copy=res.clone();
           caches.open(CACHE).then(function(c){ c.put(e.request, copy); });
         }
         return res;
       }).catch(function(){
-        // offline fallback to app shell for navigations
-        if(e.request.mode==='navigate') return caches.match('./index.html');
+        return caches.match(e.request).then(function(c){
+          return c || caches.match('./index.html');
+        });
+      })
+    );
+    return;
+  }
+
+  // Cache-first for static assets (icons etc.)
+  e.respondWith(
+    caches.match(e.request).then(function(cached){
+      if(cached) return cached;
+      return fetch(e.request).then(function(res){
+        if(res && res.status===200 && e.request.url.indexOf(self.location.origin)===0){
+          var copy=res.clone();
+          caches.open(CACHE).then(function(c){ c.put(e.request, copy); });
+        }
+        return res;
       });
     })
   );
