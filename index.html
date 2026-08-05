@@ -73,6 +73,27 @@
   .toolbar select{
     border:1px solid var(--line); border-radius:10px; padding:9px 8px; font-size:13px; background:#fff; color:var(--ink);
   }
+  /* Category groups */
+  .catgroup{margin-bottom:14px}
+  .cathead{
+    display:flex; align-items:center; gap:10px; padding:11px 13px; background:linear-gradient(135deg,#fbeef4,#f7e6ef);
+    border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); cursor:pointer; position:relative; overflow:hidden;
+  }
+  .cathead .chev{font-size:13px; color:var(--brand); transition:transform .2s; flex:none}
+  .cathead.collapsed .chev{transform:rotate(-90deg)}
+  .cathead .cn{flex:1; min-width:0}
+  .cathead .catname{font-weight:800; font-size:15px; color:var(--brand); display:flex; align-items:center; gap:7px}
+  .cathead .catname .cnt{font-size:11px; font-weight:700; color:#fff; background:var(--brand2); border-radius:20px; padding:1px 8px}
+  .cathead .catsub{font-size:11.5px; color:var(--muted); margin-top:2px; display:flex; gap:10px; flex-wrap:wrap}
+  .cathead .catsub b{font-weight:800}
+  .cathead .catsub .e{color:var(--ink)} .cathead .catsub .p{color:var(--green)} .cathead .catsub .d{color:var(--red)}
+  .cathead .addcat{
+    flex:none; width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:#fff; color:var(--brand);
+    font-size:20px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .cathead .addcat:active{transform:scale(.9)}
+  .catbody{padding-top:12px}
+  .catbody.hidden{display:none}
   /* Item cards */
   .list{padding:6px 16px}
   .empty{text-align:center; color:var(--muted); padding:40px 20px; font-size:14px}
@@ -203,7 +224,7 @@
 
 <!-- Toolbar -->
 <div class="toolbar">
-  <input class="search" id="search" placeholder="🔍 Search category or vendor…" />
+  <input class="search" id="search" placeholder="🔍 Search category, item or vendor…" />
   <select id="filterStatus">
     <option value="">All</option>
     <option value="Pending">Pending</option>
@@ -241,8 +262,14 @@
     <div class="grab"></div>
     <h2 id="sheetTitle">Add Item</h2>
     <div class="field">
-      <label>Category / Item *</label>
-      <input id="fCat" placeholder="e.g. Venue, Catering, Photography" />
+      <label>Category *</label>
+      <input id="fCat" list="catList" placeholder="e.g. Jewellery, Venue, Catering" autocomplete="off" />
+      <datalist id="catList"></datalist>
+      <div class="hint">Group heading — items with the same category are grouped together.</div>
+    </div>
+    <div class="field">
+      <label>Item / Sub-category *</label>
+      <input id="fItem" placeholder="e.g. Necklace, Ring, Bangles" />
     </div>
     <div class="field two">
       <div><label>Vendor Name</label><input id="fVendor" placeholder="Vendor / company" /></div>
@@ -284,7 +311,7 @@
 (function(){
   "use strict";
   var LS_ITEMS="wbt_items_v1", LS_BUDGET="wbt_budget_v1";
-  var items=[], editId=null;
+  var items=[], editId=null, collapsedCats={};
 
   var $=function(id){return document.getElementById(id);};
   function inr(n){
@@ -304,7 +331,12 @@
   function load(){
     try{ items = JSON.parse(localStorage.getItem(LS_ITEMS)||'[]'); }catch(e){ items=[]; }
     if(!Array.isArray(items)) items=[];
+    migrate(items);
     var b = localStorage.getItem(LS_BUDGET); if(b!==null) $('totalBudget').value=b;
+  }
+  // Older data stored only "cat" (used as Category/Item). Give each item an "item" name so grouping works.
+  function migrate(arr){
+    arr.forEach(function(it){ if(it && it.cat && it.item===undefined){ it.item=it.cat; } });
   }
   function save(){ localStorage.setItem(LS_ITEMS, JSON.stringify(items)); }
   function saveBudget(){ localStorage.setItem(LS_BUDGET, $('totalBudget').value||''); }
@@ -354,7 +386,7 @@
       var st=statusOf(it);
       if(fs && st!==fs) return false;
       if(q){
-        var hay=((it.cat||'')+' '+(it.vendor||'')+' '+(it.person||'')+' '+(it.notes||'')).toLowerCase();
+        var hay=((it.cat||'')+' '+(it.item||'')+' '+(it.vendor||'')+' '+(it.person||'')+' '+(it.notes||'')).toLowerCase();
         if(hay.indexOf(q)<0) return false;
       }
       return true;
@@ -375,55 +407,101 @@
     }
     if(!arr.length){ list.innerHTML='<div class="empty"><div class="big">🔍</div>No matches.</div>'; return; }
 
-    list.innerHTML=arr.map(function(it){
-      var st=statusOf(it), bal=balOf(it), est=Number(it.est)||0, paid=Number(it.paid)||0;
-      var pctPaid=est? Math.min(100, paid/est*100):0;
-      var badgeCls = st==='Paid'?'b-paid':st==='Partial'?'b-partial':'b-pending';
-      var contacts='';
-      if(it.phone){
-        var tel=it.phone.replace(/[^+\d]/g,'');
-        contacts+='<a href="tel:'+esc(tel)+'">📞 '+esc(it.phone)+'</a>';
-        contacts+='<a href="https://wa.me/'+esc(tel.replace(/^\+/,''))+'" target="_blank" rel="noopener">💬 WhatsApp</a>';
+    // group by category, preserving current sort order within each group
+    var groups=[], gmap={};
+    arr.forEach(function(it){
+      var c=it.cat||'Uncategorised';
+      if(!gmap[c]){ gmap[c]={cat:c, rows:[]}; gmap[c]._i=(it._i||0); groups.push(gmap[c]); }
+      gmap[c].rows.push(it);
+    });
+    // order groups by the chosen sort as well
+    groups.sort(function(a,b){
+      if(sort==='cat') return a.cat.localeCompare(b.cat);
+      if(sort==='est'||sort==='bal'){
+        var av=a.rows.reduce(function(s,x){return s+(sort==='bal'?balOf(x):Number(x.est)||0);},0);
+        var bv=b.rows.reduce(function(s,x){return s+(sort==='bal'?balOf(x):Number(x.est)||0);},0);
+        return bv-av;
       }
-      if(it.email){
-        if(it.email.indexOf('@')>0) contacts+='<a href="mailto:'+esc(it.email)+'">✉️ '+esc(it.email)+'</a>';
-        else contacts+='<span class="tag">📍 '+esc(it.email)+'</span>';
-      }
-      var meta=[];
-      if(it.share) meta.push('🎯 Target '+esc(it.share)+'%');
-      if(it.date) meta.push('📅 Due '+fmtDate(it.date));
-      if(it.payDates) meta.push('🧾 '+esc(it.payDates));
-      return '<div class="item">'+
-        '<div class="accent" style="background:'+accentColor(st)+'"></div>'+
-        '<div class="top"><div><div class="cat">'+esc(it.cat||'Untitled')+'</div>'+
-          (it.vendor||it.person?'<div class="vendor">'+esc([it.vendor,it.person].filter(Boolean).join(' • '))+'</div>':'')+
-        '</div><span class="badge '+badgeCls+'">'+st+'</span></div>'+
-        '<div class="money-row">'+
-          '<div class="m mest"><div class="k">Estimated</div><div class="v">'+inr(est)+'</div></div>'+
-          '<div class="m mpaid"><div class="k">Paid</div><div class="v">'+inr(paid)+'</div></div>'+
-          '<div class="m mbal"><div class="k">Balance</div><div class="v">'+inr(bal)+'</div></div>'+
+      return (a._i||0)-(b._i||0);
+    });
+
+    list.innerHTML=groups.map(function(g){
+      var gEst=0,gPaid=0;
+      g.rows.forEach(function(it){ gEst+=Number(it.est)||0; gPaid+=Number(it.paid)||0; });
+      var gBal=Math.max(0,gEst-gPaid);
+      var collapsed = collapsedCats[g.cat]?'collapsed':'';
+      var bodyHidden = collapsedCats[g.cat]?'hidden':'';
+      var head='<div class="cathead '+collapsed+'" data-cat="'+esc(g.cat)+'">'+
+        '<span class="chev">▼</span>'+
+        '<div class="cn">'+
+          '<div class="catname">'+esc(g.cat)+' <span class="cnt">'+g.rows.length+'</span></div>'+
+          '<div class="catsub"><span class="e">Est <b>'+inr(gEst)+'</b></span>'+
+            '<span class="p">Paid <b>'+inr(gPaid)+'</b></span>'+
+            '<span class="d">Due <b>'+inr(gBal)+'</b></span></div>'+
         '</div>'+
-        '<div class="mini-prog"><i style="width:'+pctPaid+'%"></i></div>'+
-        (contacts?'<div class="contact">'+contacts+'</div>':'')+
-        (meta.length?'<div class="meta">'+meta.map(function(m){return '<span>'+m+'</span>';}).join('')+'</div>':'')+
-        (it.notes?'<div class="notes">'+esc(it.notes)+'</div>':'')+
-        '<div class="item-actions">'+
-          (bal>0?'<button class="pay" data-pay="'+it.id+'">✓ Mark Paid</button>':'')+
-          '<button data-edit="'+it.id+'">✏️ Edit</button>'+
-          '<button class="del" data-del="'+it.id+'">🗑 Delete</button>'+
-        '</div>'+
+        '<button class="addcat" data-addcat="'+esc(g.cat)+'" title="Add item to '+esc(g.cat)+'">＋</button>'+
       '</div>';
+      var body='<div class="catbody '+bodyHidden+'">'+g.rows.map(itemCard).join('')+'</div>';
+      return '<div class="catgroup">'+head+body+'</div>';
     }).join('');
+  }
+
+  function itemCard(it){
+    var st=statusOf(it), bal=balOf(it), est=Number(it.est)||0, paid=Number(it.paid)||0;
+    var pctPaid=est? Math.min(100, paid/est*100):0;
+    var badgeCls = st==='Paid'?'b-paid':st==='Partial'?'b-partial':'b-pending';
+    var contacts='';
+    if(it.phone){
+      var tel=it.phone.replace(/[^+\d]/g,'');
+      contacts+='<a href="tel:'+esc(tel)+'">📞 '+esc(it.phone)+'</a>';
+      contacts+='<a href="https://wa.me/'+esc(tel.replace(/^\+/,''))+'" target="_blank" rel="noopener">💬 WhatsApp</a>';
+    }
+    if(it.email){
+      if(it.email.indexOf('@')>0) contacts+='<a href="mailto:'+esc(it.email)+'">✉️ '+esc(it.email)+'</a>';
+      else contacts+='<span class="tag">📍 '+esc(it.email)+'</span>';
+    }
+    var meta=[];
+    if(it.share) meta.push('🎯 Target '+esc(it.share)+'%');
+    if(it.date) meta.push('📅 Due '+fmtDate(it.date));
+    if(it.payDates) meta.push('🧾 '+esc(it.payDates));
+    var title = it.item || it.cat || 'Untitled';
+    return '<div class="item">'+
+      '<div class="accent" style="background:'+accentColor(st)+'"></div>'+
+      '<div class="top"><div><div class="cat">'+esc(title)+'</div>'+
+        (it.vendor||it.person?'<div class="vendor">'+esc([it.vendor,it.person].filter(Boolean).join(' • '))+'</div>':'')+
+      '</div><span class="badge '+badgeCls+'">'+st+'</span></div>'+
+      '<div class="money-row">'+
+        '<div class="m mest"><div class="k">Estimated</div><div class="v">'+inr(est)+'</div></div>'+
+        '<div class="m mpaid"><div class="k">Paid</div><div class="v">'+inr(paid)+'</div></div>'+
+        '<div class="m mbal"><div class="k">Balance</div><div class="v">'+inr(bal)+'</div></div>'+
+      '</div>'+
+      '<div class="mini-prog"><i style="width:'+pctPaid+'%"></i></div>'+
+      (contacts?'<div class="contact">'+contacts+'</div>':'')+
+      (meta.length?'<div class="meta">'+meta.map(function(m){return '<span>'+m+'</span>';}).join('')+'</div>':'')+
+      (it.notes?'<div class="notes">'+esc(it.notes)+'</div>':'')+
+      '<div class="item-actions">'+
+        (bal>0?'<button class="pay" data-pay="'+it.id+'">✓ Mark Paid</button>':'')+
+        '<button data-edit="'+it.id+'">✏️ Edit</button>'+
+        '<button class="del" data-del="'+it.id+'">🗑 Delete</button>'+
+      '</div>'+
+    '</div>';
   }
 
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function fmtDate(d){ if(!d)return''; var p=d.split('-'); if(p.length!==3)return d; var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return p[2]+' '+m[+p[1]-1]+' '+p[0]; }
 
   // ---- Modal ----
-  function openSheet(it){
+  function refreshCatList(){
+    var cats={}; items.forEach(function(it){ if(it.cat) cats[it.cat]=1; });
+    var dl=$('catList'); dl.textContent='';
+    Object.keys(cats).sort().forEach(function(c){ var o=document.createElement('option'); o.value=c; dl.appendChild(o); });
+  }
+  function openSheet(it, presetCat){
     editId = it? it.id : null;
-    $('sheetTitle').textContent = it? 'Edit Item' : 'Add Item';
-    $('fCat').value=it?it.cat||'':''; $('fVendor').value=it?it.vendor||'':'';
+    refreshCatList();
+    $('sheetTitle').textContent = it? 'Edit Item' : (presetCat? 'Add to '+presetCat : 'Add Item');
+    $('fCat').value=it?it.cat||'':(presetCat||''); $('fItem').value=it?it.item||'':'';
+    $('fVendor').value=it?it.vendor||'':'';
     $('fPerson').value=it?it.person||'':''; $('fPhone').value=it?it.phone||'':'';
     $('fEmail').value=it?it.email||'':''; $('fShare').value=it?it.share||'':'';
     $('fEst').value=it?it.est||'':''; $('fPaid').value=it?it.paid||'':'';
@@ -431,7 +509,7 @@
     $('fPayDates').value=it?it.payDates||'':''; $('fNotes').value=it?it.notes||'':'';
     updateCalc();
     $('overlay').classList.add('show');
-    setTimeout(function(){$('fCat').focus();},200);
+    setTimeout(function(){ (presetCat? $('fItem') : $('fCat')).focus(); },200);
   }
   function closeSheet(){ $('overlay').classList.remove('show'); }
   function updateCalc(){
@@ -441,9 +519,11 @@
   }
   function saveItem(){
     var cat=$('fCat').value.trim();
-    if(!cat){ toast('Category / Item is required'); $('fCat').focus(); return; }
+    var item=$('fItem').value.trim();
+    if(!cat){ toast('Category is required'); $('fCat').focus(); return; }
+    if(!item){ toast('Item / Sub-category is required'); $('fItem').focus(); return; }
     var data={
-      cat:cat, vendor:$('fVendor').value.trim(), person:$('fPerson').value.trim(),
+      cat:cat, item:item, vendor:$('fVendor').value.trim(), person:$('fPerson').value.trim(),
       phone:$('fPhone').value.trim(), email:$('fEmail').value.trim(),
       share:$('fShare').value.trim(), est:Number($('fEst').value)||0, paid:Number($('fPaid').value)||0,
       status:$('fStatus').value, date:$('fDate').value, payDates:$('fPayDates').value.trim(),
@@ -473,16 +553,18 @@
     toast('Backup downloaded 💾');
   }
   function exportCsv(){
-    var cols=['Category/Item','Vendor Name','Contact Person','Phone Number','Email/Address','Target % Share','Total Estimated (INR)','Advance Paid (INR)','Balance Due (INR)','Payment Status','Payment Dates','Notes'];
+    var cols=['Category','Item/Sub-category','Vendor Name','Contact Person','Phone Number','Email/Address','Target % Share','Total Estimated (INR)','Advance Paid (INR)','Balance Due (INR)','Payment Status','Payment Dates','Notes'];
     var rows=[cols.join(',')];
-    items.forEach(function(it){
-      var r=[it.cat,it.vendor,it.person,it.phone,it.email,it.share,it.est,it.paid,balOf(it),statusOf(it),it.payDates,it.notes];
+    // sort by category then item for a tidy sheet
+    var sorted=items.slice().sort(function(a,b){ return (a.cat||'').localeCompare(b.cat||'')||(a.item||'').localeCompare(b.item||''); });
+    sorted.forEach(function(it){
+      var r=[it.cat,it.item,it.vendor,it.person,it.phone,it.email,it.share,it.est,it.paid,balOf(it),statusOf(it),it.payDates,it.notes];
       rows.push(r.map(csvCell).join(','));
     });
     // totals row
     var est=items.reduce(function(s,it){return s+(Number(it.est)||0);},0);
     var paid=items.reduce(function(s,it){return s+(Number(it.paid)||0);},0);
-    rows.push(['TOTAL','','','','','',est,paid,Math.max(0,est-paid),'','',''].map(csvCell).join(','));
+    rows.push(['TOTAL','','','','','','',est,paid,Math.max(0,est-paid),'','',''].map(csvCell).join(','));
     download('wedding-budget.csv', '﻿'+rows.join('\r\n'), 'text/csv');
     toast('CSV downloaded 📊');
   }
@@ -496,6 +578,7 @@
         if(!Array.isArray(incoming)) throw 0;
         if(!confirm('Restore '+incoming.length+' item(s)? This replaces your current list.')) return;
         items=incoming.map(function(it,i){ it.id=it.id||uid(); if(it._i==null) it._i=i; return it; });
+        migrate(items);
         if(d.budget!=null){ $('totalBudget').value=d.budget; saveBudget(); }
         save(); render(); toast('Restored '+items.length+' items ✓');
       }catch(e){ toast('Could not read that file'); }
@@ -506,10 +589,13 @@
   function seed(){
     if(items.length && !confirm('Add sample items to your list?')) return;
     var samples=[
-      {cat:'Venue & Banquet',vendor:'Grand Palace Gardens',person:'Mr. Rajesh',phone:'+919876543210',email:'events@grandpalace.in',share:'25',est:500000,paid:150000,status:'auto',date:'2026-11-20',payDates:'Booking advance 5 Aug',notes:'Includes hall + lawn, 500 pax'},
-      {cat:'Catering',vendor:'Spice Route Caterers',person:'Anita',phone:'+919812345678',email:'hello@spiceroute.in',share:'20',est:400000,paid:0,status:'auto',date:'2026-11-15',payDates:'',notes:'Veg + non-veg, 8 live counters'},
-      {cat:'Photography & Video',vendor:'Candid Frames Studio',person:'Vikram',phone:'+919900112233',email:'book@candidframes.in',share:'8',est:150000,paid:150000,status:'auto',date:'2026-10-01',payDates:'Full paid 1 Oct',notes:'Pre-wedding + 2 day coverage, drone'},
-      {cat:'Décor & Flowers',vendor:'Bloom & Bling',person:'Priya',phone:'+919765432100',email:'Sector 18, Noida',share:'12',est:220000,paid:50000,status:'auto',date:'2026-11-18',payDates:'Advance 10 Aug',notes:'Stage, entrance, mandap florals'}
+      {cat:'Venue & Banquet',item:'Wedding hall booking',vendor:'Grand Palace Gardens',person:'Mr. Rajesh',phone:'+919876543210',email:'events@grandpalace.in',share:'25',est:500000,paid:150000,status:'auto',date:'2026-11-20',payDates:'Booking advance 5 Aug',notes:'Includes hall + lawn, 500 pax'},
+      {cat:'Catering',item:'Dinner buffet (500 pax)',vendor:'Spice Route Caterers',person:'Anita',phone:'+919812345678',email:'hello@spiceroute.in',share:'20',est:400000,paid:0,status:'auto',date:'2026-11-15',payDates:'',notes:'Veg + non-veg, 8 live counters'},
+      {cat:'Jewellery',item:'Bridal Necklace Set',vendor:'Tanishq',person:'Store Manager',phone:'+919811223344',email:'Sector 25, Noida',share:'',est:350000,paid:100000,status:'auto',date:'2026-10-25',payDates:'Advance 1 Aug',notes:'Polki + diamond set'},
+      {cat:'Jewellery',item:'Gold Bangles (pair)',vendor:'Tanishq',person:'Store Manager',phone:'+919811223344',email:'Sector 25, Noida',share:'',est:180000,paid:0,status:'auto',date:'2026-10-25',payDates:'',notes:'22kt, ~40g'},
+      {cat:'Jewellery',item:'Engagement Rings',vendor:'CaratLane',person:'Neha',phone:'+919822334455',email:'DLF Mall',share:'',est:90000,paid:90000,status:'auto',date:'2026-09-10',payDates:'Paid 10 Sep',notes:'His & hers, solitaire'},
+      {cat:'Photography & Video',item:'Full coverage package',vendor:'Candid Frames Studio',person:'Vikram',phone:'+919900112233',email:'book@candidframes.in',share:'8',est:150000,paid:150000,status:'auto',date:'2026-10-01',payDates:'Full paid 1 Oct',notes:'Pre-wedding + 2 day coverage, drone'},
+      {cat:'Décor & Flowers',item:'Stage & mandap décor',vendor:'Bloom & Bling',person:'Priya',phone:'+919765432100',email:'Sector 18, Noida',share:'12',est:220000,paid:50000,status:'auto',date:'2026-11-18',payDates:'Advance 10 Aug',notes:'Stage, entrance, mandap florals'}
     ];
     samples.forEach(function(s,i){ s.id=uid(); s._i=Date.now()+i; items.push(s); });
     if(!$('totalBudget').value){ $('totalBudget').value='2000000'; saveBudget(); }
@@ -531,11 +617,25 @@
   $('fileInput').onchange=function(e){ if(e.target.files[0]) importJson(e.target.files[0]); e.target.value=''; };
 
   $('list').addEventListener('click', function(e){
+    // per-category add button
+    var addBtn=e.target.closest('[data-addcat]');
+    if(addBtn){ e.stopPropagation(); openSheet(null, addBtn.getAttribute('data-addcat')); return; }
+    // collapse/expand category header
+    var head=e.target.closest('.cathead');
+    if(head){
+      var c=head.getAttribute('data-cat');
+      collapsedCats[c]=!collapsedCats[c];
+      head.classList.toggle('collapsed');
+      var body=head.parentNode.querySelector('.catbody');
+      if(body) body.classList.toggle('hidden');
+      return;
+    }
+    // item action buttons
     var b=e.target.closest('button'); if(!b) return;
     var id=b.getAttribute('data-edit')||b.getAttribute('data-del')||b.getAttribute('data-pay');
     var it=items.find(function(x){return x.id===id;}); if(!it) return;
     if(b.hasAttribute('data-edit')) openSheet(it);
-    else if(b.hasAttribute('data-del')){ if(confirm('Delete "'+(it.cat||'this item')+'"?')){ items=items.filter(function(x){return x.id!==id;}); save(); render(); toast('Deleted'); } }
+    else if(b.hasAttribute('data-del')){ if(confirm('Delete "'+(it.item||it.cat||'this item')+'"?')){ items=items.filter(function(x){return x.id!==id;}); save(); render(); toast('Deleted'); } }
     else if(b.hasAttribute('data-pay')){ it.paid=Number(it.est)||0; it.status='auto'; save(); render(); toast('Marked as fully paid ✓'); }
   });
 
