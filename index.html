@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<meta name="theme-color" content="#8b2f5c" />
+<meta name="theme-color" content="#0c5a45" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Wedding Budget" />
@@ -15,14 +15,15 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
 <style>
   :root{
-    --bg1:#fbf1f5; --bg2:#f6e9f0; --bg3:#f3eef7;
-    --card:#ffffff; --ink:#3a2733; --muted:#9c8a95;
-    --brand:#9d3d68; --brand2:#c86a99; --brand-deep:#7a2b50;
-    --gold:#c9a24b; --gold2:#e6c877; --rose:#d98aa8;
-    --green:#2e9e6b; --amber:#d9922b; --red:#d1495b;
-    --line:#f0e2ea; --line2:#efe6f0;
-    --shadow:0 6px 22px rgba(139,47,92,.10);
-    --shadow-sm:0 3px 12px rgba(139,47,92,.07);
+    /* Emerald & Gold */
+    --bg1:#f6f3ea; --bg2:#f1f0e4; --bg3:#eef2ec;
+    --card:#ffffff; --ink:#243029; --muted:#8a938c;
+    --brand:#137a5f; --brand2:#2fa07c; --brand-deep:#0c5a45;
+    --gold:#c19a3f; --gold2:#e3c368; --rose:#37a985;   /* --rose kept as accent (now emerald) for focus rings */
+    --green:#2e9e6b; --amber:#d9922b; --red:#c9455b;
+    --line:#e7ede6; --line2:#e9ecdf;
+    --shadow:0 6px 22px rgba(12,90,69,.11);
+    --shadow-sm:0 3px 12px rgba(12,90,69,.08);
     --serif:"Iowan Old Style","Palatino Linotype","Palatino","Book Antiqua",Georgia,"Times New Roman",serif;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   }
@@ -32,7 +33,7 @@
     font-family:var(--sans);
     background:
       radial-gradient(1200px 500px at 100% -10%, rgba(233,200,119,.16), transparent 60%),
-      radial-gradient(900px 500px at -10% 5%, rgba(217,138,168,.18), transparent 55%),
+      radial-gradient(900px 500px at -10% 5%, rgba(47,160,124,.16), transparent 55%),
       linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 45%,var(--bg3) 100%);
     background-attachment:fixed;
     color:var(--ink); font-size:15px; line-height:1.45;
@@ -44,7 +45,7 @@
     color:#fff; padding:20px 18px 46px; padding-top:calc(20px + env(safe-area-inset-top));
     position:relative; z-index:5;
     border-radius:0 0 26px 26px;
-    box-shadow:0 8px 26px rgba(122,43,80,.32);
+    box-shadow:0 8px 26px rgba(12,90,69,.32);
   }
   header::after{ /* subtle gold hairline */
     content:""; position:absolute; left:18px; right:18px; bottom:30px; height:1px;
@@ -55,12 +56,23 @@
     display:flex; align-items:center; gap:9px; text-shadow:0 1px 8px rgba(0,0,0,.15);
   }
   header .sub{opacity:.82; font-size:12px; margin-top:3px; letter-spacing:.2px; font-style:italic}
+  .countdown{
+    position:relative; display:inline-flex; align-items:center; gap:7px; margin-top:12px;
+    background:rgba(255,255,255,.14); border:1px solid rgba(230,200,119,.4);
+    color:#fff; padding:7px 13px; border-radius:22px; font-size:13px; font-weight:600; cursor:pointer;
+    backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+  }
+  .countdown .ic{width:15px;height:15px;color:var(--gold2)}
+  .countdown #cdText b{font-family:var(--serif); font-weight:600; font-size:15px}
+  .countdown input[type=date]{
+    position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; border:none;
+  }
   /* Hero budget card — deliberately distinct from the search bar */
   .hero{
     margin:-34px 16px 4px; position:relative; z-index:8;
-    background:linear-gradient(135deg,#fff 0%,#fff8fb 100%);
-    border:1px solid #f2dfe9; border-radius:20px;
-    box-shadow:0 12px 30px rgba(122,43,80,.16);
+    background:linear-gradient(135deg,#fff 0%,#fbfdf9 100%);
+    border:1px solid #e3ecdf; border-radius:20px;
+    box-shadow:0 12px 30px rgba(12,90,69,.16);
     padding:15px 18px; display:flex; align-items:center; gap:14px;
     overflow:hidden;
   }
@@ -68,7 +80,7 @@
     content:""; position:absolute; left:0; top:0; bottom:0; width:6px;
     background:linear-gradient(180deg,var(--gold2),var(--gold));
   }
-  .hero .ico{font-size:26px; filter:drop-shadow(0 2px 3px rgba(201,162,75,.4))}
+  .hero .ico{font-size:26px; filter:drop-shadow(0 2px 3px rgba(193,154,63,.45))}
   .hero .body{flex:1; min-width:0}
   .hero label{
     display:block; font-size:11px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase;
@@ -81,7 +93,7 @@
     color:var(--brand-deep); width:100%; padding:0; letter-spacing:.5px;
   }
   .hero input:focus{outline:none}
-  .hero input::placeholder{color:#d9c2ce; font-weight:500}
+  .hero input::placeholder{color:#c3d0c6; font-weight:500}
   /* Summary cards */
   .summary{
     display:grid; grid-template-columns:repeat(2,1fr); gap:11px; padding:14px 16px 4px;
@@ -105,7 +117,7 @@
   .scard.rem.over .v{color:var(--red)}
   /* progress */
   .prog-wrap{padding:8px 16px 2px}
-  .prog{background:#efe0e9; border-radius:20px; height:15px; overflow:hidden; display:flex; box-shadow:inset 0 1px 3px rgba(122,43,80,.12); border:1px solid rgba(255,255,255,.6)}
+  .prog{background:#e2ece4; border-radius:20px; height:15px; overflow:hidden; display:flex; box-shadow:inset 0 1px 3px rgba(12,90,69,.12); border:1px solid rgba(255,255,255,.6)}
   .prog i{display:block; height:100%; transition:width .4s ease}
   .prog .p1{background:linear-gradient(90deg,#2e9e6b,#48c78e)}
   .prog .p2{background:linear-gradient(90deg,#e2a53d,#f0be5f)}
@@ -115,10 +127,10 @@
   /* Toolbar */
   .toolbar{display:flex; gap:8px; padding:14px 16px 6px; align-items:center}
   .toolbar input.search{
-    flex:1; border:1px solid rgba(255,255,255,.8); border-radius:24px; padding:11px 16px; font-size:14px;
+    flex:1; border:1px solid rgba(255,255,255,.8); border-radius:24px; padding:11px 16px 11px 44px; font-size:14px;
     background:rgba(255,255,255,.7); box-shadow:var(--shadow-sm); color:var(--ink);
   }
-  .toolbar input.search:focus{outline:none; border-color:var(--rose); box-shadow:0 0 0 3px rgba(217,138,168,.18)}
+  .toolbar input.search:focus{outline:none; border-color:var(--rose); box-shadow:0 0 0 3px rgba(47,160,124,.20)}
   .toolbar select{
     border:1px solid rgba(255,255,255,.8); border-radius:14px; padding:10px 8px; font-size:13px;
     background:rgba(255,255,255,.7); color:var(--ink); box-shadow:var(--shadow-sm);
@@ -127,7 +139,7 @@
   .catgroup{margin-bottom:18px}
   .cathead{
     display:flex; align-items:center; gap:12px; padding:13px 15px;
-    background:linear-gradient(135deg,#ffffff 0%,#fdf3f8 100%);
+    background:linear-gradient(135deg,#ffffff 0%,#f4faf5 100%);
     border:1px solid rgba(255,255,255,.8); border-radius:18px; box-shadow:var(--shadow);
     cursor:pointer; position:relative; overflow:hidden;
   }
@@ -136,7 +148,7 @@
   .cathead.collapsed .chev{transform:rotate(-90deg)}
   .cathead .cn{flex:1; min-width:0}
   .cathead .catname{font-family:var(--serif); font-weight:600; font-size:18px; color:var(--brand-deep); display:flex; align-items:center; gap:9px}
-  .cathead .catname .cnt{font-family:var(--sans); font-size:11px; font-weight:700; color:#fff; background:linear-gradient(135deg,var(--brand),var(--brand2)); border-radius:20px; padding:2px 9px; box-shadow:0 2px 6px rgba(157,61,104,.3)}
+  .cathead .catname .cnt{font-family:var(--sans); font-size:11px; font-weight:700; color:#fff; background:linear-gradient(135deg,var(--brand),var(--brand2)); border-radius:20px; padding:2px 9px; box-shadow:0 2px 6px rgba(19,122,95,.32)}
   .cathead .catsub{font-size:11.5px; color:var(--muted); margin-top:3px; display:flex; gap:12px; flex-wrap:wrap}
   .cathead .catsub b{font-weight:800; font-family:var(--serif)}
   .cathead .catsub .e{color:var(--ink)} .cathead .catsub .p{color:var(--green)} .cathead .catsub .d{color:var(--red)}
@@ -144,7 +156,7 @@
     flex:none; width:36px; height:36px; border-radius:50%; border:none;
     background:linear-gradient(135deg,var(--brand),var(--brand2)); color:#fff;
     font-size:22px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;
-    box-shadow:0 3px 10px rgba(157,61,104,.35);
+    box-shadow:0 3px 10px rgba(19,122,95,.35);
   }
   .cathead .addcat:active{transform:scale(.9)}
   .catbody{padding-top:12px; padding-left:4px}
@@ -166,7 +178,7 @@
   .b-partial{background:#fdf1de; color:var(--amber)}
   .b-pending{background:#fbe6e9; color:var(--red)}
   .money-row{display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:13px; text-align:center}
-  .money-row .m{background:linear-gradient(135deg,#fdf7fa,#faf2f6); border-radius:12px; padding:9px 4px; border:1px solid var(--line)}
+  .money-row .m{background:linear-gradient(135deg,#f7faf5,#f1f6f0); border-radius:12px; padding:9px 4px; border:1px solid var(--line)}
   .money-row .m .k{font-size:9.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; font-weight:700}
   .money-row .m .v{font-family:var(--serif); font-size:15px; font-weight:600; margin-top:3px}
   .m.mest .v{color:var(--ink)} .m.mpaid .v{color:var(--green)} .m.mbal .v{color:var(--red)}
@@ -174,11 +186,11 @@
   .mini-prog i{display:block; height:100%; background:linear-gradient(90deg,var(--green),#5ac999); transition:width .4s ease}
   .contact{display:flex; flex-wrap:wrap; gap:7px; margin-top:12px}
   .contact a, .contact span.tag{
-    font-size:12px; text-decoration:none; color:var(--brand); background:#fbeff5;
+    font-size:12px; text-decoration:none; color:var(--brand); background:#eef7f1;
     padding:6px 12px; border-radius:20px; display:inline-flex; align-items:center; gap:5px; border:1px solid var(--line);
   }
-  .contact a:active{background:#f5dfec}
-  .notes{font-size:12.5px; color:#7d6c76; margin-top:11px; white-space:pre-wrap; background:linear-gradient(135deg,#fdf7fa,#faf2f6); padding:9px 12px; border-radius:12px; border:1px solid var(--line)}
+  .contact a:active{background:#dff0e6}
+  .notes{font-size:12.5px; color:#6b756e; margin-top:11px; white-space:pre-wrap; background:linear-gradient(135deg,#f7faf5,#f1f6f0); padding:9px 12px; border-radius:12px; border:1px solid var(--line)}
   .meta{display:flex; gap:12px; flex-wrap:wrap; font-size:11.5px; color:var(--muted); margin-top:11px}
   .item-actions{display:flex; gap:8px; margin-top:13px}
   .item-actions button{
@@ -193,7 +205,7 @@
     position:fixed; right:18px; bottom:calc(80px + env(safe-area-inset-bottom)); z-index:30;
     background:linear-gradient(135deg,var(--brand),var(--brand2)); color:#fff; border:none;
     width:62px; height:62px; border-radius:50%; font-size:33px; line-height:1;
-    box-shadow:0 8px 22px rgba(157,61,104,.5); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 22px rgba(19,122,95,.5); cursor:pointer; display:flex; align-items:center; justify-content:center;
     border:2px solid rgba(255,255,255,.35);
   }
   .fab:active{transform:scale(.92)}
@@ -201,7 +213,7 @@
   .bottombar{
     position:fixed; left:0; right:0; bottom:0; z-index:25;
     background:rgba(255,255,255,.86); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-    border-top:1px solid rgba(255,255,255,.8); box-shadow:0 -4px 20px rgba(122,43,80,.08);
+    border-top:1px solid rgba(255,255,255,.8); box-shadow:0 -4px 20px rgba(12,90,69,.09);
     display:flex; padding:9px 12px calc(9px + env(safe-area-inset-bottom)); gap:8px;
   }
   .bottombar button{
@@ -209,7 +221,7 @@
     font-size:11px; font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;
   }
   .bottombar button .ic{font-size:19px}
-  .bottombar button:active{background:#f7e6ef}
+  .bottombar button:active{background:#e7f3ec}
   /* Modal */
   .overlay{
     position:fixed; inset:0; background:rgba(43,29,38,.55); z-index:40; display:none;
@@ -226,9 +238,9 @@
   .field{margin-bottom:13px}
   .field label{display:block; font-size:11px; font-weight:700; color:var(--brand2); margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px}
   .field input, .field select, .field textarea{
-    width:100%; border:1px solid var(--line); border-radius:13px; padding:12px 13px; font-size:15px; background:#fdf9fb; color:var(--ink); font-family:inherit;
+    width:100%; border:1px solid var(--line); border-radius:13px; padding:12px 13px; font-size:15px; background:#fafcf8; color:var(--ink); font-family:inherit;
   }
-  .field input:focus, .field select:focus, .field textarea:focus{outline:none; border-color:var(--rose); background:#fff; box-shadow:0 0 0 3px rgba(217,138,168,.16)}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:none; border-color:var(--rose); background:#fff; box-shadow:0 0 0 3px rgba(47,160,124,.18)}
   .field textarea{resize:vertical; min-height:60px}
   .field.two{display:grid; grid-template-columns:1fr 1fr; gap:10px}
   .field.two > div{margin:0}
@@ -257,8 +269,6 @@
   .searchwrap{flex:1; position:relative; display:flex}
   .searchwrap .sic{position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--muted); display:flex}
   .searchwrap .sic .ic{width:17px;height:17px}
-  .searchwrap .search{padding-left:46px}
-  .searchwrap .sic{left:16px}
   .cathead .addcat .ic{width:20px;height:20px;stroke-width:2}
   .contact .ic{width:14px;height:14px}
   .meta .ic{width:13px;height:13px;vertical-align:-2px;opacity:.75;margin-right:2px}
@@ -299,6 +309,11 @@
 <header>
   <h1><span class="hicon"><svg class="ic"><use href="#i-rings"/></svg></span> Wedding Budget</h1>
   <div class="sub">saved on your phone • works offline</div>
+  <div class="countdown" id="countdown">
+    <svg class="ic"><use href="#i-calendar"/></svg>
+    <span id="cdText">Set your wedding date</span>
+    <input type="date" id="weddingDate" aria-label="Wedding date" />
+  </div>
 </header>
 
 <!-- Hero budget card (distinct from search) -->
@@ -421,7 +436,7 @@
 <script>
 (function(){
   "use strict";
-  var LS_ITEMS="wbt_items_v1", LS_BUDGET="wbt_budget_v1";
+  var LS_ITEMS="wbt_items_v1", LS_BUDGET="wbt_budget_v1", LS_WDATE="wbt_wdate_v1";
   var items=[], editId=null, collapsedCats={};
 
   var $=function(id){return document.getElementById(id);};
@@ -444,6 +459,22 @@
     if(!Array.isArray(items)) items=[];
     migrate(items);
     var b = localStorage.getItem(LS_BUDGET); if(b!==null) $('totalBudget').value=b;
+    var wd = localStorage.getItem(LS_WDATE); if(wd) $('weddingDate').value=wd;
+    updateCountdown();
+  }
+  function updateCountdown(){
+    var v=$('weddingDate').value;
+    var el=$('cdText');
+    if(!v){ el.textContent='Set your wedding date'; return; }
+    // parse as local date
+    var p=v.split('-'); var wed=new Date(+p[0],+p[1]-1,+p[2]);
+    var now=new Date(); var today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+    var days=Math.round((wed-today)/86400000);
+    var pretty=fmtDate(v);
+    if(days>1) el.innerHTML='<b>'+days+'</b> days to go · '+pretty;
+    else if(days===1) el.innerHTML='<b>Tomorrow</b>! · '+pretty;
+    else if(days===0) el.innerHTML='<b>Today</b> — congratulations!';
+    else el.innerHTML='Married '+Math.abs(days)+' day'+(Math.abs(days)===1?'':'s')+' ago · '+pretty;
   }
   // Older data stored only "cat" (used as Category/Item). Give each item an "item" name so grouping works.
   function migrate(arr){
@@ -659,7 +690,7 @@
     setTimeout(function(){URL.revokeObjectURL(url); a.remove();},100);
   }
   function exportJson(){
-    var payload={ app:'wedding-budget-tracker', version:1, budget:$('totalBudget').value||'', items:items };
+    var payload={ app:'wedding-budget-tracker', version:1, budget:$('totalBudget').value||'', weddingDate:$('weddingDate').value||'', items:items };
     download('wedding-budget-backup.json', JSON.stringify(payload,null,2), 'application/json');
     toast('Backup downloaded');
   }
@@ -691,6 +722,7 @@
         items=incoming.map(function(it,i){ it.id=it.id||uid(); if(it._i==null) it._i=i; return it; });
         migrate(items);
         if(d.budget!=null){ $('totalBudget').value=d.budget; saveBudget(); }
+        if(d.weddingDate!=null){ $('weddingDate').value=d.weddingDate; localStorage.setItem(LS_WDATE, d.weddingDate||''); updateCountdown(); }
         save(); render(); toast('Restored '+items.length+' items ✓');
       }catch(e){ toast('Could not read that file'); }
     };
@@ -721,6 +753,7 @@
   $('fEst').oninput=updateCalc; $('fPaid').oninput=updateCalc;
   $('search').oninput=render; $('filterStatus').onchange=render; $('sortBy').onchange=render;
   $('totalBudget').oninput=function(){ saveBudget(); recalcSummary(); };
+  $('weddingDate').onchange=function(){ localStorage.setItem(LS_WDATE, this.value||''); updateCountdown(); };
   $('btnExportJson').onclick=exportJson;
   $('btnExportCsv').onclick=exportCsv;
   $('btnSeed').onclick=seed;
