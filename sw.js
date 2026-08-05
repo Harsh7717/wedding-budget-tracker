@@ -1,5 +1,5 @@
 /* Wedding Budget Tracker — service worker (offline cache) */
-var CACHE = 'wbt-v4';
+var CACHE = 'wbt-v5';
 var ASSETS = [
   './',
   './index.html',
