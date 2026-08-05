@@ -15,25 +15,65 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
 <style>
   :root{
-    /* Emerald & Gold */
-    --bg1:#f6f3ea; --bg2:#f1f0e4; --bg3:#eef2ec;
-    --card:#ffffff; --ink:#243029; --muted:#8a938c;
-    --brand:#137a5f; --brand2:#2fa07c; --brand-deep:#0c5a45;
-    --gold:#c19a3f; --gold2:#e3c368; --rose:#37a985;   /* --rose kept as accent (now emerald) for focus rings */
+    --card:#ffffff;
     --green:#2e9e6b; --amber:#d9922b; --red:#c9455b;
-    --line:#e7ede6; --line2:#e9ecdf;
-    --shadow:0 6px 22px rgba(12,90,69,.11);
-    --shadow-sm:0 3px 12px rgba(12,90,69,.08);
+    --shadow:0 6px 22px rgba(40,40,40,.11);
+    --shadow-sm:0 3px 12px rgba(40,40,40,.08);
     --serif:"Iowan Old Style","Palatino Linotype","Palatino","Book Antiqua",Georgia,"Times New Roman",serif;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  /* ===== THEMES — swap via <html data-theme="…"> ===== */
+  /* Emerald & Gold (default) */
+  :root, [data-theme="emerald"]{
+    --bg1:#f6f3ea; --bg2:#f1f0e4; --bg3:#eef2ec; --ink:#243029; --muted:#8a938c;
+    --brand:#137a5f; --brand2:#2fa07c; --brand-deep:#0c5a45;
+    --gold:#c19a3f; --gold2:#e3c368; --rose:#37a985; --line:#e7ede6;
+  }
+  /* Royal Plum & Rose Gold */
+  [data-theme="plum"]{
+    --bg1:#f7f1f4; --bg2:#f3ecf1; --bg3:#efe9f0; --ink:#332330; --muted:#9a8792;
+    --brand:#7d2b56; --brand2:#a8497f; --brand-deep:#5c1e40;
+    --gold:#c78a5a; --gold2:#e6b483; --rose:#c77fa3; --line:#eddfe8;
+  }
+  /* Sapphire & Champagne */
+  [data-theme="sapphire"]{
+    --bg1:#eef1f6; --bg2:#eaeef5; --bg3:#eceef3; --ink:#1f2733; --muted:#8790a0;
+    --brand:#274690; --brand2:#4b6cc0; --brand-deep:#1b3269;
+    --gold:#c2a15a; --gold2:#e2c98a; --rose:#5b7fd0; --line:#e2e6ee;
+  }
+  /* Terracotta & Sand (boho) */
+  [data-theme="terracotta"]{
+    --bg1:#f8f1ea; --bg2:#f5ece2; --bg3:#f3ece5; --ink:#3a2a22; --muted:#a4907f;
+    --brand:#b1522f; --brand2:#d17a54; --brand-deep:#8a3d20;
+    --gold:#c99a45; --gold2:#e8c274; --rose:#d98a63; --line:#efe2d6;
+  }
+  /* Midnight & Blush (dark, dramatic) */
+  [data-theme="midnight"]{
+    --bg1:#26222e; --bg2:#221f2a; --bg3:#1d1b24; --ink:#f2ecf2; --muted:#a99fb0;
+    --brand:#c98bb0; --brand2:#e0a9c8; --brand-deep:#b06d95;
+    --gold:#e3c368; --gold2:#f0d98f; --rose:#d99cc0; --line:#3a3543;
+    --card:#302b39;
+    --shadow:0 6px 22px rgba(0,0,0,.35); --shadow-sm:0 3px 12px rgba(0,0,0,.3);
+  }
+  /* Rose Petal & Gold (soft romantic pink) */
+  [data-theme="rose"]{
+    --bg1:#fbf0f3; --bg2:#f9ebf0; --bg3:#f7eef2; --ink:#3a232d; --muted:#a98a95;
+    --brand:#c04068; --brand2:#e07a9c; --brand-deep:#9c2f50;
+    --gold:#d4a24b; --gold2:#eec678; --rose:#e58aa8; --line:#f2dde5;
+  }
+  /* Teal & Coral (fresh modern) */
+  [data-theme="teal"]{
+    --bg1:#edf5f4; --bg2:#eaf3f2; --bg3:#eef4f2; --ink:#1f302e; --muted:#84928f;
+    --brand:#0f8f8f; --brand2:#3bb3ad; --brand-deep:#0a6b6b;
+    --gold:#e07a5f; --gold2:#f0a184; --rose:#ef8f78; --line:#dfeceb;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{
     font-family:var(--sans);
     background:
-      radial-gradient(1200px 500px at 100% -10%, rgba(233,200,119,.16), transparent 60%),
-      radial-gradient(900px 500px at -10% 5%, rgba(47,160,124,.16), transparent 55%),
+      radial-gradient(1200px 500px at 100% -10%, color-mix(in srgb,var(--gold) 22%,transparent), transparent 60%),
+      radial-gradient(900px 500px at -10% 5%, color-mix(in srgb,var(--brand2) 20%,transparent), transparent 55%),
       linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 45%,var(--bg3) 100%);
     background-attachment:fixed;
     color:var(--ink); font-size:15px; line-height:1.45;
@@ -70,8 +110,8 @@
   /* Hero budget card — deliberately distinct from the search bar */
   .hero{
     margin:-34px 16px 4px; position:relative; z-index:8;
-    background:linear-gradient(135deg,#fff 0%,#fbfdf9 100%);
-    border:1px solid #e3ecdf; border-radius:20px;
+    background:linear-gradient(135deg,#fff 0%,color-mix(in srgb,var(--brand) 5%,#fff) 100%);
+    border:1px solid color-mix(in srgb,var(--brand) 14%,#fff); border-radius:20px;
     box-shadow:0 12px 30px rgba(12,90,69,.16);
     padding:15px 18px; display:flex; align-items:center; gap:14px;
     overflow:hidden;
@@ -93,7 +133,7 @@
     color:var(--brand-deep); width:100%; padding:0; letter-spacing:.5px;
   }
   .hero input:focus{outline:none}
-  .hero input::placeholder{color:#c3d0c6; font-weight:500}
+  .hero input::placeholder{color:color-mix(in srgb,var(--brand) 28%,#fff); font-weight:500}
   /* Summary cards */
   .summary{
     display:grid; grid-template-columns:repeat(2,1fr); gap:11px; padding:14px 16px 4px;
@@ -113,11 +153,11 @@
   .scard.est .v{color:var(--brand)}
   .scard.paid .v{color:var(--green)}
   .scard.bal .v{color:var(--red)}
-  .scard.rem .v{color:#b58a2a}
+  .scard.rem .v{color:color-mix(in srgb,var(--gold) 78%,#000 22%)}
   .scard.rem.over .v{color:var(--red)}
   /* progress */
   .prog-wrap{padding:8px 16px 2px}
-  .prog{background:#e2ece4; border-radius:20px; height:15px; overflow:hidden; display:flex; box-shadow:inset 0 1px 3px rgba(12,90,69,.12); border:1px solid rgba(255,255,255,.6)}
+  .prog{background:color-mix(in srgb,var(--brand) 12%,#fff); border-radius:20px; height:15px; overflow:hidden; display:flex; box-shadow:inset 0 1px 3px rgba(12,90,69,.12); border:1px solid rgba(255,255,255,.6)}
   .prog i{display:block; height:100%; transition:width .4s ease}
   .prog .p1{background:linear-gradient(90deg,#2e9e6b,#48c78e)}
   .prog .p2{background:linear-gradient(90deg,#e2a53d,#f0be5f)}
@@ -139,7 +179,7 @@
   .catgroup{margin-bottom:18px}
   .cathead{
     display:flex; align-items:center; gap:12px; padding:13px 15px;
-    background:linear-gradient(135deg,#ffffff 0%,#f4faf5 100%);
+    background:linear-gradient(135deg,#ffffff 0%,color-mix(in srgb,var(--brand) 7%,#fff) 100%);
     border:1px solid rgba(255,255,255,.8); border-radius:18px; box-shadow:var(--shadow);
     cursor:pointer; position:relative; overflow:hidden;
   }
@@ -178,7 +218,7 @@
   .b-partial{background:#fdf1de; color:var(--amber)}
   .b-pending{background:#fbe6e9; color:var(--red)}
   .money-row{display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:13px; text-align:center}
-  .money-row .m{background:linear-gradient(135deg,#f7faf5,#f1f6f0); border-radius:12px; padding:9px 4px; border:1px solid var(--line)}
+  .money-row .m{background:linear-gradient(135deg,color-mix(in srgb,var(--brand) 5%,#fff),color-mix(in srgb,var(--brand) 9%,#fff)); border-radius:12px; padding:9px 4px; border:1px solid var(--line)}
   .money-row .m .k{font-size:9.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; font-weight:700}
   .money-row .m .v{font-family:var(--serif); font-size:15px; font-weight:600; margin-top:3px}
   .m.mest .v{color:var(--ink)} .m.mpaid .v{color:var(--green)} .m.mbal .v{color:var(--red)}
@@ -186,11 +226,11 @@
   .mini-prog i{display:block; height:100%; background:linear-gradient(90deg,var(--green),#5ac999); transition:width .4s ease}
   .contact{display:flex; flex-wrap:wrap; gap:7px; margin-top:12px}
   .contact a, .contact span.tag{
-    font-size:12px; text-decoration:none; color:var(--brand); background:#eef7f1;
+    font-size:12px; text-decoration:none; color:var(--brand); background:color-mix(in srgb,var(--brand) 9%,#fff);
     padding:6px 12px; border-radius:20px; display:inline-flex; align-items:center; gap:5px; border:1px solid var(--line);
   }
-  .contact a:active{background:#dff0e6}
-  .notes{font-size:12.5px; color:#6b756e; margin-top:11px; white-space:pre-wrap; background:linear-gradient(135deg,#f7faf5,#f1f6f0); padding:9px 12px; border-radius:12px; border:1px solid var(--line)}
+  .contact a:active{background:color-mix(in srgb,var(--brand) 16%,#fff)}
+  .notes{font-size:12.5px; color:var(--muted); margin-top:11px; white-space:pre-wrap; background:linear-gradient(135deg,color-mix(in srgb,var(--brand) 5%,#fff),color-mix(in srgb,var(--brand) 9%,#fff)); padding:9px 12px; border-radius:12px; border:1px solid var(--line)}
   .meta{display:flex; gap:12px; flex-wrap:wrap; font-size:11.5px; color:var(--muted); margin-top:11px}
   .item-actions{display:flex; gap:8px; margin-top:13px}
   .item-actions button{
@@ -221,7 +261,7 @@
     font-size:11px; font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;
   }
   .bottombar button .ic{font-size:19px}
-  .bottombar button:active{background:#e7f3ec}
+  .bottombar button:active{background:color-mix(in srgb,var(--brand) 11%,#fff)}
   /* Modal */
   .overlay{
     position:fixed; inset:0; background:rgba(43,29,38,.55); z-index:40; display:none;
@@ -238,7 +278,7 @@
   .field{margin-bottom:13px}
   .field label{display:block; font-size:11px; font-weight:700; color:var(--brand2); margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px}
   .field input, .field select, .field textarea{
-    width:100%; border:1px solid var(--line); border-radius:13px; padding:12px 13px; font-size:15px; background:#fafcf8; color:var(--ink); font-family:inherit;
+    width:100%; border:1px solid var(--line); border-radius:13px; padding:12px 13px; font-size:15px; background:color-mix(in srgb,var(--brand) 4%,#fff); color:var(--ink); font-family:inherit;
   }
   .field input:focus, .field select:focus, .field textarea:focus{outline:none; border-color:var(--rose); background:#fff; box-shadow:0 0 0 3px rgba(47,160,124,.18)}
   .field textarea{resize:vertical; min-height:60px}
@@ -251,6 +291,23 @@
   .btn-cancel{background:#f2eaee; color:var(--muted)}
   .btn-save:active,.btn-cancel:active{transform:scale(.98)}
   .calc-note{font-size:12px; color:var(--green); font-weight:600; margin-top:-6px; margin-bottom:12px}
+  /* theme picker */
+  .themegrid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:8px}
+  .swatch{
+    position:relative; border:2px solid transparent; border-radius:16px; padding:14px 14px 12px; cursor:pointer;
+    text-align:left; color:#fff; overflow:hidden; box-shadow:var(--shadow-sm); transition:transform .12s ease;
+  }
+  .swatch:active{transform:scale(.97)}
+  .swatch .sw-name{font-family:var(--serif); font-size:15px; font-weight:600; position:relative; z-index:1}
+  .swatch .sw-dots{display:flex; gap:6px; margin-top:10px; position:relative; z-index:1}
+  .swatch .sw-dots i{width:16px; height:16px; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .swatch .sw-check{
+    position:absolute; top:10px; right:10px; width:24px; height:24px; border-radius:50%;
+    background:rgba(255,255,255,.95); display:none; align-items:center; justify-content:center; z-index:2;
+  }
+  .swatch .sw-check svg{width:15px; height:15px}
+  .swatch.sel{border-color:rgba(255,255,255,.9)}
+  .swatch.sel .sw-check{display:flex}
   /* toast */
   .toast{
     position:fixed; left:50%; transform:translateX(-50%); bottom:100px; background:var(--ink); color:#fff;
@@ -303,6 +360,7 @@
   <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16"/><rect class="ic-fill" x="7.5" y="12" width="2.6" height="5" rx="0.6"/><rect class="ic-fill" x="12" y="8.5" width="2.6" height="8.5" rx="0.6"/><rect class="ic-fill" x="16.5" y="10.5" width="2.6" height="6.5" rx="0.6"/></symbol>
   <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M18.5 15l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 20h16"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18c1.4 0 2-1 2-1.8 0-.5-.3-.9-.6-1.2-.3-.4-.5-.7-.5-1.2 0-.8.7-1.3 1.5-1.3H16a5 5 0 0 0 5-5c0-4.2-4-7.5-9-7.5z"/><circle class="ic-fill" cx="7.5" cy="12" r="1.1"/><circle class="ic-fill" cx="10" cy="8" r="1.1"/><circle class="ic-fill" cx="14.5" cy="8" r="1.1"/><circle class="ic-fill" cx="17" cy="11.5" r="1.1"/></symbol>
   <symbol id="i-flower" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.4"/><path d="M12 9.6C12 6 10 4 12 3c2 1 0 3 0 6.6zM12 14.4C12 18 14 20 12 21c-2-1 0-3 0-6.6zM9.6 12C6 12 4 14 3 12c1-2 3 0 6.6 0zM14.4 12C18 12 20 10 21 12c-1 2-3 0-6.6 0z"/></symbol>
 </svg>
 
@@ -377,7 +435,7 @@
   <button id="btnExportJson"><svg class="ic"><use href="#i-save"/></svg>Backup</button>
   <button id="btnImport"><svg class="ic"><use href="#i-folder"/></svg>Restore</button>
   <button id="btnExportCsv"><svg class="ic"><use href="#i-chart"/></svg>CSV</button>
-  <button id="btnSeed"><svg class="ic"><use href="#i-sparkle"/></svg>Sample</button>
+  <button id="btnTheme"><svg class="ic"><use href="#i-palette"/></svg>Theme</button>
   <button id="btnInstall" class="hidden"><svg class="ic"><use href="#i-download"/></svg>Install</button>
 </div>
 <input type="file" id="fileInput" accept="application/json,.json" />
@@ -431,12 +489,24 @@
   </div>
 </div>
 
+<!-- Theme picker -->
+<div class="overlay" id="themeOverlay">
+  <div class="sheet" id="themeSheet">
+    <div class="grab"></div>
+    <h2>Choose a Theme</h2>
+    <div class="themegrid" id="themeGrid"></div>
+    <div class="sheet-actions" style="margin-top:6px">
+      <button class="btn-cancel" id="btnThemeClose">Done</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 (function(){
   "use strict";
-  var LS_ITEMS="wbt_items_v1", LS_BUDGET="wbt_budget_v1", LS_WDATE="wbt_wdate_v1";
+  var LS_ITEMS="wbt_items_v1", LS_BUDGET="wbt_budget_v1", LS_WDATE="wbt_wdate_v1", LS_THEME="wbt_theme_v1";
   var items=[], editId=null, collapsedCats={};
 
   var $=function(id){return document.getElementById(id);};
@@ -729,21 +799,42 @@
     reader.readAsText(file);
   }
 
-  function seed(){
-    if(items.length && !confirm('Add sample items to your list?')) return;
-    var samples=[
-      {cat:'Venue & Banquet',item:'Wedding hall booking',vendor:'Grand Palace Gardens',person:'Mr. Rajesh',phone:'+919876543210',email:'events@grandpalace.in',share:'25',est:500000,paid:150000,status:'auto',date:'2026-11-20',payDates:'Booking advance 5 Aug',notes:'Includes hall + lawn, 500 pax'},
-      {cat:'Catering',item:'Dinner buffet (500 pax)',vendor:'Spice Route Caterers',person:'Anita',phone:'+919812345678',email:'hello@spiceroute.in',share:'20',est:400000,paid:0,status:'auto',date:'2026-11-15',payDates:'',notes:'Veg + non-veg, 8 live counters'},
-      {cat:'Jewellery',item:'Bridal Necklace Set',vendor:'Tanishq',person:'Store Manager',phone:'+919811223344',email:'Sector 25, Noida',share:'',est:350000,paid:100000,status:'auto',date:'2026-10-25',payDates:'Advance 1 Aug',notes:'Polki + diamond set'},
-      {cat:'Jewellery',item:'Gold Bangles (pair)',vendor:'Tanishq',person:'Store Manager',phone:'+919811223344',email:'Sector 25, Noida',share:'',est:180000,paid:0,status:'auto',date:'2026-10-25',payDates:'',notes:'22kt, ~40g'},
-      {cat:'Jewellery',item:'Engagement Rings',vendor:'CaratLane',person:'Neha',phone:'+919822334455',email:'DLF Mall',share:'',est:90000,paid:90000,status:'auto',date:'2026-09-10',payDates:'Paid 10 Sep',notes:'His & hers, solitaire'},
-      {cat:'Photography & Video',item:'Full coverage package',vendor:'Candid Frames Studio',person:'Vikram',phone:'+919900112233',email:'book@candidframes.in',share:'8',est:150000,paid:150000,status:'auto',date:'2026-10-01',payDates:'Full paid 1 Oct',notes:'Pre-wedding + 2 day coverage, drone'},
-      {cat:'Décor & Flowers',item:'Stage & mandap décor',vendor:'Bloom & Bling',person:'Priya',phone:'+919765432100',email:'Sector 18, Noida',share:'12',est:220000,paid:50000,status:'auto',date:'2026-11-18',payDates:'Advance 10 Aug',notes:'Stage, entrance, mandap florals'}
-    ];
-    samples.forEach(function(s,i){ s.id=uid(); s._i=Date.now()+i; items.push(s); });
-    if(!$('totalBudget').value){ $('totalBudget').value='2000000'; saveBudget(); }
-    save(); render(); toast('Sample data added');
+  // ---- Theme picker ----
+  var THEMES=[
+    {id:'emerald',    name:'Emerald & Gold',   c:['#137a5f','#2fa07c','#c19a3f']},
+    {id:'plum',       name:'Royal Plum',       c:['#7d2b56','#a8497f','#c78a5a']},
+    {id:'sapphire',   name:'Sapphire',         c:['#274690','#4b6cc0','#c2a15a']},
+    {id:'terracotta', name:'Terracotta',       c:['#b1522f','#d17a54','#c99a45']},
+    {id:'midnight',   name:'Midnight & Blush', c:['#c98bb0','#e0a9c8','#e3c368']},
+    {id:'rose',       name:'Rose Petal',       c:['#c04068','#e07a9c','#d4a24b']},
+    {id:'teal',       name:'Teal & Coral',     c:['#0f8f8f','#3bb3ad','#e07a5f']}
+  ];
+  function applyTheme(id){
+    document.documentElement.setAttribute('data-theme', id);
+    try{ localStorage.setItem(LS_THEME, id); }catch(e){}
+    var t=THEMES.filter(function(x){return x.id===id;})[0];
+    var meta=document.querySelector('meta[name="theme-color"]');
+    if(meta && t) meta.setAttribute('content', t.c[0]);
   }
+  function renderThemeGrid(){
+    var cur=localStorage.getItem(LS_THEME)||'emerald';
+    var g=$('themeGrid'); g.textContent='';
+    THEMES.forEach(function(t){
+      var b=document.createElement('button');
+      b.className='swatch'+(t.id===cur?' sel':'');
+      b.setAttribute('data-theme-id', t.id);
+      b.style.background='linear-gradient(135deg,'+t.c[0]+','+t.c[1]+')';
+      var chk=document.createElement('span'); chk.className='sw-check';
+      chk.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="'+t.c[0]+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+      var nm=document.createElement('span'); nm.className='sw-name'; nm.textContent=t.name;
+      var dots=document.createElement('span'); dots.className='sw-dots';
+      t.c.forEach(function(col){ var d=document.createElement('i'); d.style.background=col; dots.appendChild(d); });
+      b.appendChild(chk); b.appendChild(nm); b.appendChild(dots);
+      g.appendChild(b);
+    });
+  }
+  function openThemePicker(){ renderThemeGrid(); $('themeOverlay').classList.add('show'); }
+  function closeThemePicker(){ $('themeOverlay').classList.remove('show'); }
 
   // ---- Events ----
   $('fab').onclick=function(){ openSheet(null); };
@@ -756,7 +847,14 @@
   $('weddingDate').onchange=function(){ localStorage.setItem(LS_WDATE, this.value||''); updateCountdown(); };
   $('btnExportJson').onclick=exportJson;
   $('btnExportCsv').onclick=exportCsv;
-  $('btnSeed').onclick=seed;
+  $('btnTheme').onclick=openThemePicker;
+  $('btnThemeClose').onclick=closeThemePicker;
+  $('themeOverlay').onclick=function(e){ if(e.target===$('themeOverlay')) closeThemePicker(); };
+  $('themeGrid').addEventListener('click', function(e){
+    var b=e.target.closest('[data-theme-id]'); if(!b) return;
+    var id=b.getAttribute('data-theme-id');
+    applyTheme(id); renderThemeGrid();
+  });
   $('btnImport').onclick=function(){ $('fileInput').click(); };
   $('fileInput').onchange=function(e){ if(e.target.files[0]) importJson(e.target.files[0]); e.target.value=''; };
 
@@ -783,8 +881,9 @@
     else if(b.hasAttribute('data-pay')){ it.paid=Number(it.est)||0; it.status='auto'; save(); render(); toast('Marked as fully paid ✓'); }
   });
 
-  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeSheet(); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ closeSheet(); closeThemePicker(); } });
 
+  applyTheme(localStorage.getItem(LS_THEME)||'emerald');
   load(); render();
 
   // ---- PWA install prompt ----
